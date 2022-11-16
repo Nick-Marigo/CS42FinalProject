@@ -7,36 +7,35 @@ class Troop extends Phaser.GameObjects.Sprite {
     this.damageValue = damageValue;
     this.cost = cost;
 
+    this.setTexture('infantry');
     this.setPosition(x, y);
-    this.setVelocity(50);
+    //this.setVelocity(this.speed);
 
     scene.add.existing(this);
 
     this.alive = true;
 
-    this.hp = new HealthBar(scene, x, y, healthValue);
+    //this.hp = new HealthBar(scene, x, y, healthValue);
   }
 
   preUpdate(time, delta) {
     super.preUpdate(time, delta);
   }
 
-  getCost()
-  {
+  getCost() {
     return this.cost;
   }
 
   checkRange(enemy) {
     let deltaX = this.x - enemy.x;
     let deltaY = this.y - enemy.y;
-    let distance = Math.sqrt( Math.pow(deltaX, 2) + Math.pow(deltaY, 2) );
+    let distance = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
 
-    return(distance < this.range);
-    
+    return (distance < this.range);
+
   }
-  
-  damage(amount) 
-  {  
+
+  damage(amount) {
     if (this.hp.decrease(amount)) {
       this.alive = false;
 
@@ -46,7 +45,7 @@ class Troop extends Phaser.GameObjects.Sprite {
     }
   }
 
-  attack() {
+  /*attack() {
     var target = ();
 
     if (target && this.alive) {
@@ -71,14 +70,13 @@ class Troop extends Phaser.GameObjects.Sprite {
 
       this.timer = this.scene.time.addEvent({ delay: Phaser.Math.Between(1000, 3000), callback: this.fire, callbackScope: this });
     }
-  }
+  }*/
 
 }
 
 class Infantry extends Troop {
-  constructor(scene, x, y) 
-  {
-    super(scene, x, y, 'infantry', health, damage, cost);
+  constructor(scene, x, y) {
+    super(scene, x, y, 'infantry', 100, 30, 50, 10, 50); //Health, damage, cost, range, speed
   }
-
 }
+

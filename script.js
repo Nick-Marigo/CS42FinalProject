@@ -10,6 +10,8 @@
   update: titleUpdate
 };*/
 
+//import {Infantry} from 'troops.js';
+
 let gamePlayScene = {
   key: "gamePlayScene",
   active: false,
@@ -29,6 +31,7 @@ let config = {
       debug: true
     }
   },
+  fps: { forceSetTimeOut: true, target: 60 },
   scene: [gamePlayScene],
   //parent: "tron"
 };
@@ -41,7 +44,7 @@ let infantry;
 let infantryCost = 50;
 var button1, button2, button3, button4, button5;
 let goldCount;
-let gold = 100;
+let gold = 250;
 let troopBarrierBottom = 700, troopBarrierTop = 200;
 let boundryBottom, boundryTop;
 let canplace = false;
@@ -51,33 +54,8 @@ const troopbuttons = [1, 2, 3, 4, 5];
 let currentTroop = 0;
 let updateCount = 1;
 
-var Troops = {
-  Infantry: [{
-    health: 100,
-    damage: 30,
-    cost: 30,
-  }],
-  Archer: [{
-    health: 75,
-    damage: 40,
-    cost: 50,
-  }],
-  Tank: [{
-    health: 250,
-    damage: 10,
-    cost: 75
-  }],
-  Wizard: [{
-    health: 50,
-    damage: 80,
-    cost: 100
-  }],
-  Calvary: [{
-    health: 150,
-    damage: 65,
-    cost: 200
-  }]
-}
+//var Troops = [];
+//var mytroops;
 
 
 function gamePreload() {
@@ -106,6 +84,8 @@ function gameCreate() {
   this.add.image(3000, 500, 'map');
 
   this.physics.world.setBounds(0, 0, 6000, 1000);
+
+  mytroops = this.physics.add.group();
 
   goldCount = this.add.text(10, 16, 'Gold: ' + gold, { fontFamily: 'Domine', fontSize: '40px', color: '#A316C7', stroke: '#000000', strokeThickness: 5 });
   goldCount.setScrollFactor(0, 0);
@@ -159,7 +139,7 @@ function gameUpdate() {
 
   updateCount++;
 
-  if (updateCount % 720 === 0) {
+  if (updateCount % 300 === 0) {
     gold += 30;
     goldCount.setText('Gold: ' + gold);
     updateCount = 1;
@@ -178,21 +158,15 @@ function gameUpdate() {
   }
 
   goldCount.setText('Gold: ' + gold);
-  //console.log(mycamera.x);
-  //console.log(canplace);
-
-  //button.once('pointerdown', selectTroop, this);
 
   console.log('Update: ', canplace, currentTroop, gold);
-  //console.log(game.input.mousePointer.y);
 
-  if (canplace && gold >= infantryCost) {
+
+  if (canplace) {
     if (game.input.mousePointer.y > troopBarrierTop && game.input.mousePointer.y < troopBarrierBottom) {
       textCantPlace.setVisible(false);
       boundryBottom.setVisible(false);
       boundryTop.setVisible(false);
-      //console.log('click');
-      //this.input.once('pointerdown', spawnTroop, this);
     } else {
       textCantPlace.setVisible(true);
       boundryBottom.setVisible(true);
@@ -200,39 +174,18 @@ function gameUpdate() {
     }
   }
 
-  //console.log(tracking_pointer)
-  /*if(game.input.mousePointer.y > 200 && game.input.mousePointer.y < 800) {
-    tracking_pointer = true;
-  } else {
-    tracking_pointer = false;
-  }*/
 
 }
 
-function selectTroop(pointer) {
+function selectTroop() {
 
-
+  if(gold - 50 < 0) {
+    return;
+  }
+  
   canplace = true;
-  //gold -= infantryCost;
   console.log('selectTroop: ', canplace);
   currentTroop = this.param1;
-
-
-  //let temp = this.add.image(pointer.x, pointer.y, 'troop');
-
-  /*if (pointer.isUp) {
-    temp.x = pointer.x;
-    temp.y = pointer.y;
-  }*/
-
-  /*console.log(pointer.y);
-  if(pointer.y > troopBarrierTop && pointer.y < troopBarrierBottom) {
-    //this.input.on('pointerdown', spawnTroop, this);
-    troop = this.physics.add.sprite(0, pointer.y, 'troop');
-    troop.setVelocityX(50);
-  }*/
-
-  //this.input.on('pointerdown', spawnTroop, this);
 
 }
 
@@ -245,12 +198,16 @@ function spawnTroop(pointer) {
   if(currentTroop <= 0) {
     return;
   }
+  
    gold -= 50;
-  console.log(pointer);
 
   if (currentTroop === 1) {
     this.physics.add.sprite(0, pointer.y, 'infantry').setVelocityX(50);
-    //mytroops.push(new Infantry(this, 0, pointer.y));
+    /*mytroops.create(new Infantry(this, 0, pointer.y));
+    console.log('my troops', mytroops);
+    mytroops.setVelocityX(50);
+    Troops.push(mytroops.create(new Infantry(this, 0, pointer.y)));
+    console.log(Troops);*/
   }
 
   if (currentTroop === 2) {
@@ -272,7 +229,5 @@ function spawnTroop(pointer) {
   currentTroop = -1;
   canplace = false;
   console.log('calling spawntroop', 'spawnTroop: ', canplace);
-    
 
 }
-
