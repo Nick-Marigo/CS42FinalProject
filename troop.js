@@ -1,17 +1,22 @@
-class Troop extends Phaser.GameObjects.Sprite {
-  constructor(scene, x, y, trooptype, healthValue, damageValue, cost) {
+/*class Troop extends Phaser.GameObjects.Sprite {
+  constructor(scene, x, y, trooptype, healthValue, damageValue, cost, range, speed) {
     super(scene, x, y);
 
     this.trooptype = trooptype;
     this.healthValue = healthValue;
     this.damageValue = damageValue;
     this.cost = cost;
+    this.speed = speed;
+    this.range = range;
 
-    this.setTexture('infantry');
+    this.setTexture(this.trooptype);
     this.setPosition(x, y);
-    //this.setVelocity(this.speed);
+
 
     scene.add.existing(this);
+    scene.physics.add.existing(this);
+
+    this.setVelocityX(this.speed);
 
     this.alive = true;
 
@@ -45,10 +50,14 @@ class Troop extends Phaser.GameObjects.Sprite {
     }
   }
 
-  /*attack() {
-    var target = ();
+  attack() {
+    var target = (enemy);
 
-    if (target && this.alive) {
+  if (target && this.alive) {
+    target.healthValue -= this.damageValue;
+  }
+    
+    /*if (target && this.alive) {
       this.play(this.color + 'Attack');
 
       var offset = (this.color === 'blue') ? 20 : -20;
@@ -70,13 +79,15 @@ class Troop extends Phaser.GameObjects.Sprite {
 
       this.timer = this.scene.time.addEvent({ delay: Phaser.Math.Between(1000, 3000), callback: this.fire, callbackScope: this });
     }
-  }*/
+  }
 
 }
 
 class Infantry extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'infantry', 100, 30, 50, 10, 50); //Health, damage, cost, range, speed
+    super(scene, x, y, 'infantry', null, 100, 30, 50, 10, 50); //Health, damage, cost, range, speed
   }
-}
+}*/
 
+//export default Troop;
+//export default Infantry;
