@@ -1,6 +1,6 @@
-/*class Troop extends Phaser.GameObjects.Sprite {
-  constructor(scene, x, y, trooptype, healthValue, damageValue, cost, range, speed) {
-    super(scene, x, y);
+class Troop extends Phaser.Physics.Arcade.Sprite {
+  constructor(scene, x, y, trooptype, frame, healthValue, damageValue, cost, range, speed) { //scene, pos x, pos y, string(texture), frame(null), Health, damage, cost, range, speed
+    super(scene, x, y, trooptype, healthValue, damageValue, cost, speed);
 
     this.trooptype = trooptype;
     this.healthValue = healthValue;
@@ -12,7 +12,6 @@
     this.setTexture(this.trooptype);
     this.setPosition(x, y);
 
-
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
@@ -20,15 +19,15 @@
 
     this.alive = true;
 
-    //this.hp = new HealthBar(scene, x, y, healthValue);
+    this.hp = new HealthBar(scene, x, y, healthValue);
+
+    this.maxCoolDown = 120;
+    this.coolDown = 0;
+
   }
 
   preUpdate(time, delta) {
     super.preUpdate(time, delta);
-  }
-
-  getCost() {
-    return this.cost;
   }
 
   checkRange(enemy) {
@@ -37,35 +36,33 @@
     let distance = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
 
     return (distance < this.range);
-
   }
 
   damage(amount) {
     if (this.hp.decrease(amount)) {
       this.alive = false;
 
-      this.play(this.color + 'Dead');
+      //this.play(this.color + 'Dead');
 
-      //Something to delete the troop
+      this.setVisible(false);
+      this.disableBody();
+      this.hp.deleteHealthBar();
     }
   }
 
-  attack() {
+
+  attack(enemy) {
     var target = (enemy);
 
-  if (target && this.alive) {
-    target.healthValue -= this.damageValue;
-  }
-    
-    /*if (target && this.alive) {
-      this.play(this.color + 'Attack');
+    if (target && this.alive && this.coolDown === 0) {
+      //this.play(this.color + 'Attack');
 
-      var offset = (this.color === 'blue') ? 20 : -20;
-      var targetX = (this.color === 'blue') ? target.x + 30 : target.x - 30;
+      //var offset = (this.color === 'blue') ? 20 : -20;
+      //var targetX = (this.color === 'blue') ? target.x + 30 : target.x - 30;
 
-      this.missile.setPosition(this.x + offset, this.y + 20).setVisible(true);
+      //this.missile.setPosition(this.x + offset, this.y + 20).setVisible(true);
 
-      this.scene.tweens.add({
+      /*this.scene.tweens.add({
         targets: this.missile,
         x: targetX,
         ease: 'Linear',
@@ -73,21 +70,63 @@
         onComplete: function(tween, targets) {
           targets[0].setVisible(false);
         }
-      });
+      });*/
 
-      target.damage(Phaser.Math.Between(2, 8));
+      target.healthValue -= this.damageValue;
+      target.damage(this.damageValue);
+      this.coolDown = this.maxCoolDown;
+    }
 
-      this.timer = this.scene.time.addEvent({ delay: Phaser.Math.Between(1000, 3000), callback: this.fire, callbackScope: this });
+    if (this.coolDown > 0) {
+      this.coolDown--;
     }
   }
 
+  getDamage() {
+    return this.damageValue;
+  }
+  
 }
 
 class Infantry extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'infantry', null, 100, 30, 50, 10, 50); //Health, damage, cost, range, speed
+    super(scene, x, y, 'infantry', null, 100, 30, 50, 50, 50); //scene, pos x, pos y, string(texture), frame(null), Health, damage, cost, range, speed
   }
+}
+
+class enemy extends Troop {
+  constructor(scene, x, y) {
+    super(scene, x, y, 'enemy', null, 100, 0, 0, 0, 0);
+  }
+}
+
+
+/*
+var Troops = {
+  Infantry: [{
+    health: 100,
+    damage: 30,
+    cost: 30,
+  }],
+  Archer: [{
+    health: 75,
+    damage: 40,
+    cost: 50,
+  }],
+  Tank: [{
+    health: 250,
+    damage: 10,
+    cost: 75
+  }],
+  Wizard: [{
+    health: 50,
+    damage: 80,
+    cost: 100
+  }],
+  Calvary: [{
+    health: 150,
+    damage: 65,
+    cost: 200
+  }]
 }*/
 
-//export default Troop;
-//export default Infantry;
