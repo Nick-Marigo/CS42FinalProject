@@ -2,27 +2,21 @@
      You will need to replace the contents of this JavaScript file with your own work, 
      and create any other files, if any, required for the assignment.
      When you are done, be certain to submit the assignment in Canvas to be graded. */
-/*let titleScene = {
-key: 'titleScene',
-active: true,
-preload: titlePreload,
-create: titleCreate,
-update: titleUpdate
-};*/
+let titleScene = {
+  key: 'titleScene',
+  active: true,
+  preload: titlePreload,
+  create: titleCreate,
+  update: titleUpdate
+};
 
-class Castle extends Phaser.Physics.Arcade.Sprite {
-  constructor(scene, x, y) {
-    super(scene, x, y, health)
-
-    this.health = health;
-    
-  }
-
-  damage(amount) {
-    this.health -= amount;
-  }
-  
-}
+/*let levelSelection = {
+  key: 'levelSelection',
+  active: false,
+  preload: levelPreload,
+  create: levelCreate,
+  update: levelUpdate
+}*/
 
 let gamePlayScene = {
   key: "gamePlayScene",
@@ -30,6 +24,22 @@ let gamePlayScene = {
   preload: gamePreload,
   create: gameCreate,
   update: gameUpdate
+};
+
+let WinningScene = {
+  key: "WinningScene",
+  active: false,
+  preload: WinPreload,
+  create: WinCreate,
+  update: WinUpdate
+};
+
+let LosingScene = {
+  key: "LosingScene",
+  active: false,
+  preload: LosingPreload,
+  create: LosingCreate,
+  update: LosingUpdate
 };
 
 let config = {
@@ -44,7 +54,7 @@ let config = {
     }
   },
   fps: { forceSetTimeOut: true, target: 60 },
-  scene: [gamePlayScene],
+  scene: [titleScene, gamePlayScene, WinningScene, LosingScene]
   //parent: "tron"
 };
 
@@ -61,11 +71,120 @@ let canplace = false;
 let textCantPlace;
 let tracking_pointer = false;
 const troopbuttons = [1, 2, 3, 4, 5];
-let currentTroop = 0;
+let currentTroop = -1;
 let updateCount = 1;
 
 var Troops = [];
 var enemyTroops = [];
+
+var playerCastle;
+var enemyCastle;
+
+//********************************************************************************************************************
+//TITLE SCENE
+//********************************************************************************************************************
+
+function titlePreload() {
+
+  this.load.image('map', 'assets/Testing/testmap.png');
+  this.load.image('infantry', 'assets/Testing/testTroops/testTroopInfantry.png');
+  this.load.image('enemy', 'assets/Testing/testTroops/testenemy.png');
+
+}
+
+function titleCreate() {
+
+  this.add.image(0, 500, 'map');
+
+  var startText = this.add.text(600, 450, 'Start Game!', { fontFamily: 'Domine', fontSize: '48px', color: '#153CD4' });
+  startText.setOrigin(0.5);
+  startText.setInteractive({ useHandCursor: true });
+  startText.setScrollFactor(0, 0);
+  startText.setDepth(3);
+  startText.on('pointerdown', titleTrans, this);
+
+  mycamera = this.cameras.main;
+
+  updateCount = 1;
+
+}
+
+let titletroops = [];
+let titlenemies = [];
+let cameraCount = 1;
+
+function titleUpdate() {
+
+  cameraCount++;
+  if (cameraCount < 300) {
+    mycamera.scrollX += 1;
+  } else {
+    mycamera.scrollX -= 1;
+    if (cameraCount > 600) {
+      cameraCount = 1;
+    }
+  }
+
+  /*updateCount++;
+  if (updateCount % 300 === 0) {
+    titletroops.push(new Infantry(this, -325, Phaser.Math.Between(25, 875)));
+    titlenemies.push(new enemy(this, 1225, Phaser.Math.Between(25, 875)));
+    updateCount = 1;
+  }
+
+  titletroops.forEach((spec) => {
+
+    if (!spec.alive) {
+      return;
+    }
+
+    let foundMatch = false;
+    for (let count = 0; count < titlenemies.length; count++) {
+      if (spec.checkRange(titlenemies[count]) && titlenemies[count].alive) {
+        spec.setVelocityX(0);
+        spec.attack(titlenemies[count]);
+        foundMatch = true;
+        break;
+      }
+    }
+
+    if (!foundMatch) {
+      spec.setVelocityX(spec.speed);
+    }
+
+  });
+
+  titlenemies.forEach((spec) => {
+
+    if (!spec.alive) {
+      return;
+    }
+
+    let foundMatch = false;
+    for (let count = 0; count < titletroops.length; count++) {
+      if (spec.checkRange(titletroops[count]) && titletroops[count].alive) {
+        spec.setVelocityX(0);
+        spec.attack(titletroops[count]);
+        foundMatch = true;
+        break;
+      }
+    }
+
+    if (!foundMatch) {
+      spec.setVelocityX(spec.speed);
+    }
+
+  });*/
+
+}
+
+function titleTrans() {
+  this.scene.start('gamePlayScene');
+}
+
+//********************************************************************************************************************
+//GAMEPLAY SCENE
+//********************************************************************************************************************
 
 function gamePreload() {
   this.load.image('map', 'assets/Testing/testmap.png');
@@ -90,15 +209,27 @@ function gamePreload() {
 
 }
 
+let textOne;
+let textTwo;
+
 function gameCreate() {
 
+  updateCount = 1;
+
   this.add.image(3000, 500, 'map');
-  let castle = this.add.image(75, 450, 'castle');
-  castle.setDepth(3);
+
+  playerCastle = new Castle(this, 75, 450);
+  enemyCastle = new Castle(this, 5925, 450);
+
+  textOne = this.add.text(200, 16, 'Castle Health: ' + playerCastle.health, { fontFamily: 'Domine', fontSize: '40px', color: '#0000FF', stroke: '#000000', strokeThickness: 5 });
+  textOne.setScrollFactor(0, 0);
+
+  textTwo = this.add.text(575, 16, 'Enemy Castle Health: ' + playerCastle.health, { fontFamily: 'Domine', fontSize: '40px', color: '#FF0000', stroke: '#000000', strokeThickness: 5 });
+  textTwo.setScrollFactor(0, 0);
 
   this.physics.world.setBounds(0, 0, 6000, 1000);
 
-  goldCount = this.add.text(10, 16, 'Gold: ' + gold, { fontFamily: 'Domine', fontSize: '40px', color: '#A316C7', stroke: '#000000', strokeThickness: 5 });
+  goldCount = this.add.text(10, 16, 'Gold: ' + gold, { fontFamily: 'Domine', fontSize: '40px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 });
   goldCount.setScrollFactor(0, 0);
 
   boundryBottom = this.add.image(3000, troopBarrierBottom, 'troopBoundry');
@@ -134,7 +265,6 @@ function gameCreate() {
   cursors = this.input.keyboard.createCursorKeys();
   this.cameras.main.setBounds(0, 0, 6000, 1000);
 
-
   textCantPlace = this.add.text(mycamera.x + 350, mycamera.y + 450, 'Can not place troop there!',
     { fontFamily: 'Domine', fontSize: '40px', color: '#FC2605', stroke: '#000000', strokeThickness: 5 });
   textCantPlace.setVisible(false);
@@ -165,14 +295,24 @@ function gameUpdate() {
   }
 
   if (cursors.left.isDown) {
-    mycamera.scrollX -= 5;
+    mycamera.scrollX -= 25;
   }
 
   if (cursors.right.isDown) {
-    mycamera.scrollX += 5;
+    mycamera.scrollX += 25;
+  }
+
+  if (playerCastle.health <= 0) {
+    this.scene.start('LosingScene');
+  }
+
+  if (enemyCastle.health <= 0) {
+    this.scene.start('WinningScene');
   }
 
   goldCount.setText('Gold: ' + gold);
+  textOne.setText('Castle Health: ' + playerCastle.health);
+  textTwo.setText('Enemy Castle Health: ' + enemyCastle.health);
 
   if (canplace) {
     if (game.input.mousePointer.y > troopBarrierTop && game.input.mousePointer.y < troopBarrierBottom) {
@@ -201,14 +341,44 @@ function gameUpdate() {
         break;
       }
     }
-    
+
     if (!foundMatch) {
       spec.setVelocityX(spec.speed);
     }
-    
-  })
 
+    if (spec.checkRange(enemyCastle)) {
+      spec.setVelocity(0);
+      spec.attack(enemyCastle);
+    }
 
+  });
+
+  enemyTroops.forEach((spec) => {
+
+    if (!spec.alive) {
+      return;
+    }
+
+    let foundMatch = false;
+    for (let count = 0; count < Troops.length; count++) {
+      if (spec.checkRange(Troops[count]) && Troops[count].alive) {
+        spec.setVelocityX(0);
+        spec.attack(Troops[count]);
+        foundMatch = true;
+        break;
+      }
+    }
+
+    if (!foundMatch) {
+      spec.setVelocityX(spec.speed);
+    }
+
+    if (spec.checkRange(playerCastle)) {
+      spec.setVelocity(0);
+      spec.attack(playerCastle);
+    }
+
+  });
 
 }
 
@@ -260,5 +430,37 @@ function spawnTroop(pointer) {
 
   currentTroop = -1;
   canplace = false;
+
+}
+
+//********************************************************************************************************************
+//WINNING SCENE
+//********************************************************************************************************************
+
+function WinPreload() {
+
+}
+
+function WinCreate() {
+
+}
+
+function WinUpdate() {
+
+}
+
+//********************************************************************************************************************
+//WINNING SCENE
+//********************************************************************************************************************
+
+function LosingPreload() {
+
+}
+
+function LosingCreate() {
+
+}
+
+function LosingUpdate() {
 
 }

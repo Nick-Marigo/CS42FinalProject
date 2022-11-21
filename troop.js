@@ -90,12 +90,13 @@ class Troop extends Phaser.Physics.Arcade.Sprite {
 
 class Infantry extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'infantry', null, 100, 30, 50, 50, 50); //scene, pos x, pos y, string(texture), frame(null), Health, damage, cost, range, speed
+    super(scene, x, y, 'infantry', null, 100, 30, 50, 50, 200); //scene, pos x, pos y, string(texture), frame(null), Health, damage, cost, range, speed
   }
 }
 
 class enemy extends Troop {
   constructor(scene, x, y) {
+    //super(scene, x, y, 'enemy', null, 100, 30, 50, 50, -50);
     super(scene, x, y, 'enemy', null, 100, 0, 0, 0, 0);
   }
 }
