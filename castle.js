@@ -10,4 +10,9 @@ class Castle extends Phaser.Physics.Arcade.Sprite {
 
     scene.add.existing(this);
   }
+
+  damage(amount) {
+    return this.health -= amount;
+  }
+  
 }

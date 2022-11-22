@@ -26,20 +26,12 @@ let gamePlayScene = {
   update: gameUpdate
 };
 
-let WinningScene = {
-  key: "WinningScene",
+let WinOrLoseScene = {
+  key: "WinOrLoseScene",
   active: false,
-  preload: WinPreload,
-  create: WinCreate,
-  update: WinUpdate
-};
-
-let LosingScene = {
-  key: "LosingScene",
-  active: false,
-  preload: LosingPreload,
-  create: LosingCreate,
-  update: LosingUpdate
+  preload: WinOrLosePreload,
+  create: WinOrLoseCreate,
+  update: WinOrLoseUpdate
 };
 
 let config = {
@@ -54,7 +46,7 @@ let config = {
     }
   },
   fps: { forceSetTimeOut: true, target: 60 },
-  scene: [titleScene, gamePlayScene, WinningScene, LosingScene]
+  scene: [titleScene, gamePlayScene, WinOrLoseScene]
   //parent: "tron"
 };
 
@@ -73,12 +65,16 @@ let tracking_pointer = false;
 const troopbuttons = [1, 2, 3, 4, 5];
 let currentTroop = -1;
 let updateCount = 1;
+let WinOrLose = false; //True equals win. False equals lose
 
 var Troops = [];
 var enemyTroops = [];
 
 var playerCastle;
+let playerCastleHealth;
 var enemyCastle;
+let enemyCastleHealth;
+
 
 //********************************************************************************************************************
 //TITLE SCENE
@@ -89,19 +85,25 @@ function titlePreload() {
   this.load.image('map', 'assets/Testing/testmap.png');
   this.load.image('infantry', 'assets/Testing/testTroops/testTroopInfantry.png');
   this.load.image('enemy', 'assets/Testing/testTroops/testenemy.png');
+  this.load.image('textBackground', 'assets/Testing/Title/textBackground.png');
 
 }
 
 function titleCreate() {
 
-  this.add.image(0, 500, 'map');
+  this.add.image(0, 500, 'map').setDepth(1);
+  this.add.image(600, 450, 'textBackground').setDepth(3).setScrollFactor(0, 0);
+
+  var title = this.add.text(600, 250, 'For Warriors Peace', { fontFamily: 'Domine', fontSize: '48px', color: '#153CD4' });
+  title.setOrigin(0.5).setScrollFactor(0, 0).setDepth(5);
 
   var startText = this.add.text(600, 450, 'Start Game!', { fontFamily: 'Domine', fontSize: '48px', color: '#153CD4' });
-  startText.setOrigin(0.5);
-  startText.setInteractive({ useHandCursor: true });
-  startText.setScrollFactor(0, 0);
-  startText.setDepth(3);
+  startText.setOrigin(0.5).setInteractive({ useHandCursor: true }).setScrollFactor(0, 0).setDepth(5);
   startText.on('pointerdown', titleTrans, this);
+
+  var tutorial = this.add.text(600, 715, 'How to Play', { fontFamily: 'Domine', fontSize: '48px', color: '#153CD4' });
+  tutorial.setInteractive({ useHandCursor: true }).setScrollFactor(0, 0).setDepth(5).setOrigin(0.5);
+  //tutorial.on('pointerdown', something, this);
 
   mycamera = this.cameras.main;
 
@@ -125,10 +127,10 @@ function titleUpdate() {
     }
   }
 
-  /*updateCount++;
+  updateCount++;
   if (updateCount % 300 === 0) {
     titletroops.push(new Infantry(this, -325, Phaser.Math.Between(25, 875)));
-    titlenemies.push(new enemy(this, 1225, Phaser.Math.Between(25, 875)));
+    titlenemies.push(new enemy(this, 1525, Phaser.Math.Between(25, 875)));
     updateCount = 1;
   }
 
@@ -174,7 +176,7 @@ function titleUpdate() {
       spec.setVelocityX(spec.speed);
     }
 
-  });*/
+  });
 
 }
 
@@ -209,9 +211,6 @@ function gamePreload() {
 
 }
 
-let textOne;
-let textTwo;
-
 function gameCreate() {
 
   updateCount = 1;
@@ -221,15 +220,15 @@ function gameCreate() {
   playerCastle = new Castle(this, 75, 450);
   enemyCastle = new Castle(this, 5925, 450);
 
-  textOne = this.add.text(200, 16, 'Castle Health: ' + playerCastle.health, { fontFamily: 'Domine', fontSize: '40px', color: '#0000FF', stroke: '#000000', strokeThickness: 5 });
-  textOne.setScrollFactor(0, 0);
+  playerCastleHealth = this.add.text(10, 16, 'Castle Health: ' + playerCastle.health, { fontFamily: 'Domine', fontSize: '40px', color: '#0000FF', stroke: '#000000', strokeThickness: 5 });
+  playerCastleHealth.setScrollFactor(0, 0);
 
-  textTwo = this.add.text(575, 16, 'Enemy Castle Health: ' + playerCastle.health, { fontFamily: 'Domine', fontSize: '40px', color: '#FF0000', stroke: '#000000', strokeThickness: 5 });
-  textTwo.setScrollFactor(0, 0);
+  enemyCastleHealth = this.add.text(690, 16, 'Enemy Castle Health: ' + playerCastle.health, { fontFamily: 'Domine', fontSize: '40px', color: '#FF0000', stroke: '#000000', strokeThickness: 5 });
+  enemyCastleHealth.setScrollFactor(0, 0);
 
   this.physics.world.setBounds(0, 0, 6000, 1000);
 
-  goldCount = this.add.text(10, 16, 'Gold: ' + gold, { fontFamily: 'Domine', fontSize: '40px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 });
+  goldCount = this.add.text(20, 830, 'Gold: ' + gold, { fontFamily: 'Domine', fontSize: '30px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 });
   goldCount.setScrollFactor(0, 0);
 
   boundryBottom = this.add.image(3000, troopBarrierBottom, 'troopBoundry');
@@ -241,23 +240,23 @@ function gameCreate() {
   enemyTroops.push(new enemy(this, 900, 500));
   enemyTroops.push(new enemy(this, 1000, 500));
 
-  button1 = this.add.image(100, 850, 'button1');
+  button1 = this.add.image(200, 850, 'button1');
   button1.setInteractive();
   button1.setScrollFactor(0, 0);
 
-  button2 = this.add.image(200, 850, 'button2');
+  button2 = this.add.image(300, 850, 'button2');
   button2.setInteractive();
   button2.setScrollFactor(0, 0);
 
-  button3 = this.add.image(300, 850, 'button3');
+  button3 = this.add.image(400, 850, 'button3');
   button3.setInteractive();
   button3.setScrollFactor(0, 0);
 
-  button4 = this.add.image(400, 850, 'button4');
+  button4 = this.add.image(500, 850, 'button4');
   button4.setInteractive();
   button4.setScrollFactor(0, 0);
 
-  button5 = this.add.image(500, 850, 'button5');
+  button5 = this.add.image(600, 850, 'button5');
   button5.setInteractive();
   button5.setScrollFactor(0, 0);
 
@@ -270,15 +269,15 @@ function gameCreate() {
   textCantPlace.setVisible(false);
   textCantPlace.setScrollFactor(0, 0);
 
-  button1.on('pointerdown', selectTroop, { param1: troopbuttons[0] });
+  button1.on('pointerdown', selectTroop, { param1: troopbuttons[0], param2: 50 });
 
-  button2.on('pointerdown', selectTroop, { param1: troopbuttons[1] });
+  button2.on('pointerdown', selectTroop, { param1: troopbuttons[1], param2: 50 });
 
-  button3.on('pointerdown', selectTroop, { param1: troopbuttons[2] });
+  button3.on('pointerdown', selectTroop, { param1: troopbuttons[2], param2: 75 });
 
-  button4.on('pointerdown', selectTroop, { param1: troopbuttons[3] });
+  button4.on('pointerdown', selectTroop, { param1: troopbuttons[3], param2: 100 });
 
-  button5.on('pointerdown', selectTroop, { param1: troopbuttons[4] });
+  button5.on('pointerdown', selectTroop, { param1: troopbuttons[4], param2: 200 });
 
   this.input.on('pointerup', spawnTroop, this);
 
@@ -303,16 +302,18 @@ function gameUpdate() {
   }
 
   if (playerCastle.health <= 0) {
-    this.scene.start('LosingScene');
+    WinOrLose = false;
+    this.scene.start('WinOrLoseScene');
   }
 
   if (enemyCastle.health <= 0) {
-    this.scene.start('WinningScene');
+    WinOrLose = true;
+    this.scene.start('WinOrLoseScene');
   }
 
   goldCount.setText('Gold: ' + gold);
-  textOne.setText('Castle Health: ' + playerCastle.health);
-  textTwo.setText('Enemy Castle Health: ' + enemyCastle.health);
+  playerCastleHealth.setText('Castle Health: ' + playerCastle.health);
+  enemyCastleHealth.setText('Enemy Castle Health: ' + enemyCastle.health);
 
   if (canplace) {
     if (game.input.mousePointer.y > troopBarrierTop && game.input.mousePointer.y < troopBarrierBottom) {
@@ -384,7 +385,7 @@ function gameUpdate() {
 
 function selectTroop() {
 
-  if (gold - 50 < 0) {
+  if (gold - this.param2 < 0) {
     return;
   }
 
@@ -434,33 +435,56 @@ function spawnTroop(pointer) {
 }
 
 //********************************************************************************************************************
-//WINNING SCENE
+//WINNING OR LOSING SCENE
 //********************************************************************************************************************
 
-function WinPreload() {
+function WinOrLosePreload() {
+  this.load.image('winbackground', 'assets/Testing/winscene.png');
+  this.load.image('losebackground', 'assets/Testing/losescene.png');
+}
+
+function WinOrLoseCreate() {
+
+  //CLEARING ARRAYS OF TROOPS
+  Troops = [];
+  enemyTroops = [];
+  titletroops = [];
+  titlenemies = [];
+
+
+  if (WinOrLose) {
+    this.add.image(600, 450, 'winbackground');
+    this.add.text(600, 250, 'You Won!', { fontFamily: 'Domine', fontSize: '48px', color: '#153CD4' }).setOrigin(0.5).setScrollFactor(0, 0).setDepth(5);
+  } else {
+    this.add.image(600, 450, 'losebackground');
+    this.add.text(600, 250, 'You Lost!', { fontFamily: 'Domine', fontSize: '48px', color: '#153CD4' }).setOrigin(0.5).setScrollFactor(0, 0).setDepth(5);
+    let textTryAgain = this.add.text(600, 350, 'Try Again', { fontFamily: 'Domine', fontSize: '48px', color: '#153CD4' });
+    textTryAgain.setInteractive({ userHandCursor: true }).setOrigin(0.5).setScrollFactor(0, 0).setDepth(5);
+    textTryAgain.on('pointerdown', currentLevelTrans, this);
+  }
+
+  let textLS = this.add.text(600, 550, 'Return to Level Selection', { fontFamily: 'Domine', fontSize: '48px', color: '#153CD4' });
+  textLS.setInteractive({ useHandCursor: true }).setOrigin(0.5).setDepth(5);
+  //startText.on('pointerdown', levelTrans, this);
+
+  let textTitle = this.add.text(600, 650, 'Return to Title', { fontFamily: 'Domine', fontSize: '48px', color: '#153CD4' })
+  textTitle.setOrigin(0.5).setInteractive({ useHandCursor: true }).setDepth(5);
+  textTitle.on('pointerdown', toTitleTrans, this);
 
 }
 
-function WinCreate() {
+function WinOrLoseUpdate() {
 
 }
 
-function WinUpdate() {
-
+function currentLevelTrans() {
+  this.scene.start('gamePlayScene');
 }
 
-//********************************************************************************************************************
-//WINNING SCENE
-//********************************************************************************************************************
+//function levelTrans() {
+//this.scene.start('level')
+//}
 
-function LosingPreload() {
-
-}
-
-function LosingCreate() {
-
-}
-
-function LosingUpdate() {
-
+function toTitleTrans() {
+  this.scene.start('titleScene');
 }
