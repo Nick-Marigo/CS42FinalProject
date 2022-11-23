@@ -42,7 +42,7 @@ let config = {
   physics: {
     default: 'arcade',
     arcade: {
-      debug: true
+      debug: false
     }
   },
   fps: { forceSetTimeOut: true, target: 60 },
@@ -214,6 +214,7 @@ function gamePreload() {
 function gameCreate() {
 
   updateCount = 1;
+  gold = 250;
 
   this.add.image(3000, 500, 'map');
 
@@ -223,7 +224,7 @@ function gameCreate() {
   playerCastleHealth = this.add.text(10, 16, 'Castle Health: ' + playerCastle.health, { fontFamily: 'Domine', fontSize: '40px', color: '#0000FF', stroke: '#000000', strokeThickness: 5 });
   playerCastleHealth.setScrollFactor(0, 0);
 
-  enemyCastleHealth = this.add.text(690, 16, 'Enemy Castle Health: ' + playerCastle.health, { fontFamily: 'Domine', fontSize: '40px', color: '#FF0000', stroke: '#000000', strokeThickness: 5 });
+  enemyCastleHealth = this.add.text(690, 16, 'Enemy Castle Health: ' + enemyCastle.health, { fontFamily: 'Domine', fontSize: '40px', color: '#FF0000', stroke: '#000000', strokeThickness: 5 });
   enemyCastleHealth.setScrollFactor(0, 0);
 
   this.physics.world.setBounds(0, 0, 6000, 1000);
