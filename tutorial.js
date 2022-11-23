@@ -6,11 +6,14 @@ let tutorial = {
   update: tutorialUpdate
 }
 
+let blackscreen;
 let tutorialTroops = [];
 let tutorialEnemies = [];
-let textOne, textTwo, textThree, textFour, textFive, textSix, textSeven;
-let one = true, two = false, three = false, four = false, five = false, six = false, seven = false;
+let spawnEnemies = true;
+let textOne, textTwo, textThree, textFour, textFive, textSix, textSeven, textEight, textNine, textTen;
+let one = true, two = false, three = false, four = false, five = false, six = false, seven = false, eight = false, nine = false, ten = false;
 let arrow3, arrow4;
+let enemiesDead = 0;
 
 function tutorialPreload() {
   this.load.image('map', 'assets/Testing/testmap.png');
@@ -57,7 +60,7 @@ function tutorialCreate() {
   button1 = this.add.image(200, 850, 'button1');
   button1.setInteractive();
   button1.setScrollFactor(0, 0);
-  button1.on('pointerdown', selectTroop, { param1: troopbuttons[0], param2: 50 });
+  button1.on('pointerdown', tutorialSelectTroop, { param1: troopbuttons[0], param2: 50 });
 
   button2 = this.add.image(300, 850, 'button2').setScrollFactor(0, 0);
   this.add.image(300, 850, 'crossed').setScrollFactor(0, 0).setDepth(2);
@@ -68,16 +71,16 @@ function tutorialCreate() {
   button5 = this.add.image(600, 850, 'button5').setScrollFactor(0, 0);
   this.add.image(600, 850, 'crossed').setScrollFactor(0, 0).setDepth(2);
 
-  this.input.on('pointerup', spawnTroop, this);
+  this.input.on('pointerup', tutorialSpawnTroop, this);
 
   mycamera = this.cameras.main;
   cursors = this.input.keyboard.createCursorKeys();
   this.cameras.main.setBounds(0, 0, 6000, 1000);
 
-  let temp = this.add.image(600, 450, 'black').setDepth(10);
-  temp.alpha = 0.65;
+  blackscreen = this.add.image(600, 450, 'black').setDepth(10);
+  blackscreen.alpha = 0.65;
 
-  let continueText = this.add.text(600, 550, 'Click to continue', { fontFamily: 'Domine', fontSize: '30px', color: '#05F3FC', stroke: '#000000', strokeThickness: 5 })
+  let continueText = this.add.text(600, 730, 'Click here to continue', { fontFamily: 'Domine', fontSize: '30px', color: '#05F3FC', stroke: '#000000', strokeThickness: 5 })
   continueText.setScrollFactor(0, 0).setOrigin(0.5).setDepth(11).setInteractive();
   continueText.on('pointerdown', moveOn, this);
 
@@ -100,8 +103,22 @@ function tutorialCreate() {
   textSix = this.add.text(600, 200, 'This is your castles health and your enemies castles health.', { fontFamily: 'Domine', fontSize: '40px', color: '#05F3FC', stroke: '#000000', strokeThickness: 5 });
   textSix.setScrollFactor(0, 0).setDepth(11).setVisible(false).setOrigin(0.5);
 
-  textSeven = this.add.text(600, 450, 'Use Left and Right Arrows to move the screen.', { fontFamily: 'Domine', fontSize: '48px', color: '#05F3FC', stroke: '#000000', strokeThickness: 5 });
+  var content2 = ['              This is your castle.', 
+                  'If your castles health gets to 0 you lose.',
+                 '            Protect it at all cost!'];
+  textSeven = this.add.text(650, 400, content2, { fontFamily: 'Domine', fontSize: '48px', color: '#05F3FC', stroke: '#000000', strokeThickness: 5 });
   textSeven.setScrollFactor(0, 0).setDepth(11).setVisible(false).setOrigin(0.5);
+
+  var content3 = ['Use Left and Right Arrows to move the screen.',
+                 '                                      (Try it)'];
+  textEight= this.add.text(600, 450, content3, { fontFamily: 'Domine', fontSize: '48px', color: '#05F3FC', stroke: '#000000', strokeThickness: 5 });
+  textEight.setScrollFactor(0, 0).setDepth(11).setVisible(false).setOrigin(0.5);
+
+  textNine = this.add.text(600, 150, 'Now select the yellow troop and kill the enemies.', { fontFamily: 'Domine', fontSize: '48px', color: '#05F3FC', stroke: '#000000', strokeThickness: 5 });
+  textNine.setScrollFactor(0, 0).setDepth(11).setVisible(false).setOrigin(0.5);
+
+  textTen = this.add.text(600, 450, 'Congrats! You finished the tutorial!', { fontFamily: 'Domine', fontSize: '48px', color: '#05F3FC', stroke: '#000000', strokeThickness: 5 });
+  textTen.setScrollFactor(0, 0).setDepth(11).setVisible(false).setOrigin(0.5);
 
   arrow3 = this.add.image(300, 850, 'arrow').setScale(.4).setDepth(11).setVisible(false);
   arrow3.flipX = true;
@@ -116,10 +133,12 @@ function tutorialCreate() {
     yoyo: true,
     X: '-=100'
   });*/
-
+  
 }
 
 function tutorialUpdate() {
+
+  updateCount++;
 
   if (updateCount % 300 === 0) {
     gold += 30;
@@ -148,7 +167,6 @@ function tutorialUpdate() {
     }
   }
 
-  console.log(one, two, three);
   if (one) {
     textOne.setVisible(true);
   } else if (two) {
@@ -177,13 +195,91 @@ function tutorialUpdate() {
     enemyCastleHealth.setDepth(11);
   } else if (seven) {
     textSeven.setVisible(true);
+    playerCastle.setDepth(11);
+  } else if (eight) {
+    textEight.setVisible(true);
+  } else if (nine) {
+    textNine.setVisible(true);
+    if (spawnEnemies) {
+      tutorialEnemies.push(new enemy(this, 1000, 600).setDepth(1));
+      tutorialEnemies.push(new enemy(this, 1000, 450).setDepth(1));
+      tutorialEnemies.push(new enemy(this, 1000, 300).setDepth(1));
+      spawnEnemies = false;
+    }
+  } else if (ten) {
+    textNine.setVisible(false);
+    blackscreen.setVisible(true);
+    textTen.setVisible(true);
   }
+
+  tutorialTroops.forEach((spec) => {
+
+    if (!spec.alive) {
+      return;
+    }
+
+    let foundMatch = false;
+    for (let count = 0; count < tutorialEnemies.length; count++) {
+      if (spec.checkRange(tutorialEnemies[count]) && tutorialEnemies[count].alive) {
+        spec.setVelocityX(0);
+        spec.attack(tutorialEnemies[count]);
+        foundMatch = true;
+        break;
+      }
+    }
+
+    if (!foundMatch) {
+      spec.setVelocityX(spec.speed);
+    }
+
+    if (spec.checkRange(enemyCastle)) {
+      spec.setVelocity(0);
+      spec.attack(enemyCastle);
+    }
+
+  });
+
+  tutorialEnemies.forEach((spec) => {
+
+    if (!spec.alive && spec.alive != null) {
+      enemiesDead++;
+      if(enemiesDead === 3) {
+        nine = false;
+        ten = true;
+        enemiesDead = null;
+      }
+      return;
+    }
+
+    enemiesDead = 0;
+    
+
+    let foundMatch = false;
+    for (let count = 0; count < tutorialTroops.length; count++) {
+      if (spec.checkRange(tutorialTroops[count]) && tutorialTroops[count].alive) {
+        spec.setVelocityX(0);
+        spec.attack(tutorialTroops[count]);
+        foundMatch = true;
+        break;
+      }
+    }
+
+    if (!foundMatch) {
+      spec.setVelocityX(spec.speed);
+    }
+
+    if (spec.checkRange(playerCastle)) {
+      spec.setVelocity(0);
+      spec.attack(playerCastle);
+    }
+
+  });
 
 }
 
-function selectTroop() {
-
-  if (gold - this.param2 < 0) {
+function tutorialSelectTroop() {
+  
+ if (gold - this.param2 < 0) {
     return;
   }
 
@@ -192,14 +288,20 @@ function selectTroop() {
 
 }
 
-function spawnTroop(pointer) {
+function tutorialSpawnTroop(pointer) {
 
   if (pointer.position.y < troopBarrierTop || pointer.position.y > troopBarrierBottom) {
     return;
   }
 
-  tutorialTroops.push(new Infantry(this, 0, pointer.y));
-  gold -= Troops[Troops.length - 1].cost;
+  if (currentTroop <= 0) {
+    return;
+  }
+
+  if(currentTroop === 1) {
+    tutorialTroops.push(new Infantry(this, 0, pointer.y).setDepth(1));
+    gold -= tutorialTroops[tutorialTroops.length - 1].cost;
+  }
 
   currentTroop = -1;
   canplace = false;
@@ -246,7 +348,22 @@ function moveOn() {
     textSix.setVisible(false);
   } else if (seven) {
     seven = false;
-    //eight = true;
+    eight = true;
+    playerCastle.setDepth(2);
     textSeven.setVisible(false);
+  } else if (eight) {
+    eight = false;
+    nine = true;
+    textEight.setVisible(false);
+    blackscreen.setVisible(false);
+  } else if (nine) {
+    nine = false;
+    textEight.setVisible(false);
+  } else if (ten) {
+    tutorialTroops = [];
+    tutorialEnemies = [];
+    ten = false;
+    one = true;
+    this.scene.start('titleScene');
   }
 }
