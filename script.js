@@ -46,7 +46,7 @@ let config = {
     }
   },
   fps: { forceSetTimeOut: true, target: 60 },
-  scene: [titleScene, gamePlayScene, WinOrLoseScene]
+  scene: [titleScene, tutorial, gamePlayScene, WinOrLoseScene]
   //parent: "tron"
 };
 
@@ -103,7 +103,7 @@ function titleCreate() {
 
   var tutorial = this.add.text(600, 715, 'How to Play', { fontFamily: 'Domine', fontSize: '48px', color: '#153CD4' });
   tutorial.setInteractive({ useHandCursor: true }).setScrollFactor(0, 0).setDepth(5).setOrigin(0.5);
-  //tutorial.on('pointerdown', something, this);
+  tutorial.on('pointerdown', function() {this.scene.start('tutorialScene')}, this);
 
   mycamera = this.cameras.main;
 

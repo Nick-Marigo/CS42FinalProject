@@ -11,6 +11,7 @@ class Troop extends Phaser.Physics.Arcade.Sprite {
 
     this.setTexture(this.trooptype);
     this.setPosition(x, y);
+    this.setDepth(2);
 
     scene.add.existing(this);
     scene.physics.add.existing(this);
