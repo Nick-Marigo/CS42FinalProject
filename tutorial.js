@@ -16,6 +16,7 @@ let arrow3, arrow4;
 let enemiesDead = 0;
 let textCanPlaceHere;
 let textCantPlaceTwo;
+var tween;
 
 function tutorialPreload() {
   this.load.image('map', 'assets/Testing/testmap.png');
@@ -38,7 +39,7 @@ function tutorialCreate() {
 
   gold = 250;
   updateCount = 1;
-  
+
   this.add.image(3000, 500, 'map');
 
   blackscreen = this.add.image(3000, 450, 'black').setDepth(10);
@@ -120,15 +121,15 @@ function tutorialCreate() {
   textSix = this.add.text(600, 200, 'This is your castles health and your enemies castles health.', { fontFamily: 'Domine', fontSize: '40px', color: '#05F3FC', stroke: '#000000', strokeThickness: 5 });
   textSix.setScrollFactor(0, 0).setDepth(11).setVisible(false).setOrigin(0.5);
 
-  var content2 = ['              This is your castle.', 
-                  'If your castles health gets to 0 you lose.',
-                 '            Protect it at all cost!'];
+  var content2 = ['              This is your castle.',
+    'If your castles health gets to 0 you lose.',
+    '            Protect it at all cost!'];
   textSeven = this.add.text(650, 400, content2, { fontFamily: 'Domine', fontSize: '48px', color: '#05F3FC', stroke: '#000000', strokeThickness: 5 });
   textSeven.setScrollFactor(0, 0).setDepth(11).setVisible(false).setOrigin(0.5);
 
   var content3 = ['Use Left and Right Arrows to move the screen.',
-                 '                                      (Try it)'];
-  textEight= this.add.text(600, 450, content3, { fontFamily: 'Domine', fontSize: '48px', color: '#05F3FC', stroke: '#000000', strokeThickness: 5 });
+    '                                      (Try it)'];
+  textEight = this.add.text(600, 450, content3, { fontFamily: 'Domine', fontSize: '48px', color: '#05F3FC', stroke: '#000000', strokeThickness: 5 });
   textEight.setScrollFactor(0, 0).setDepth(11).setVisible(false).setOrigin(0.5);
 
   textNine = this.add.text(600, 150, 'Now select the yellow troop and kill the enemies.', { fontFamily: 'Domine', fontSize: '48px', color: '#05F3FC', stroke: '#000000', strokeThickness: 5 });
@@ -143,18 +144,19 @@ function tutorialCreate() {
   arrow4 = this.add.image(800, 850, 'arrow').setScale(.4).setDepth(11).setVisible(false);
   arrow4.flipX = true;
 
-  /*this.tweens.add({
-    targets: arrow,
+  this.tweens.add({
+    targets: arrow3,
     duration: 2000,
     repeat: -1,
     yoyo: true,
-    X: '-=100'
-  });*/
-  
+    x: '-=80'
+  });
+
+
 }
 
 function tutorialUpdate() {
-
+  
   updateCount++;
 
   if (updateCount % 300 === 0) {
@@ -222,9 +224,9 @@ function tutorialUpdate() {
   } else if (nine) {
     textNine.setVisible(true);
     if (spawnEnemies) {
-      tutorialEnemies.push(new enemy(this, 1000, 600).setDepth(1));
-      tutorialEnemies.push(new enemy(this, 1000, 450).setDepth(1));
-      tutorialEnemies.push(new enemy(this, 1000, 300).setDepth(1));
+      tutorialEnemies.push(new EnemyInfantry(this, 1000, 600).setDepth(1));
+      tutorialEnemies.push(new EnemyInfantry(this, 1000, 450).setDepth(1));
+      tutorialEnemies.push(new EnemyInfantry(this, 1000, 300).setDepth(1));
       spawnEnemies = false;
     }
   } else if (ten) {
@@ -253,7 +255,7 @@ function tutorialUpdate() {
       spec.setVelocityX(spec.speed);
     }
 
-    if (spec.checkRange(tutorialEnemyCastle)) {
+    if (spec.checkCastleRange(tutorialEnemyCastle)) {
       spec.setVelocity(0);
       spec.attack(tutorialEnemyCastle);
     }
@@ -264,7 +266,7 @@ function tutorialUpdate() {
 
     if (!spec.alive && spec.alive != null) {
       enemiesDead++;
-      if(enemiesDead === 3) {
+      if (enemiesDead === 3) {
         nine = false;
         ten = true;
         enemiesDead = null;
@@ -273,7 +275,7 @@ function tutorialUpdate() {
     }
 
     enemiesDead = 0;
-    
+
 
     let foundMatch = false;
     for (let count = 0; count < tutorialTroops.length; count++) {
@@ -289,7 +291,7 @@ function tutorialUpdate() {
       spec.setVelocityX(spec.speed);
     }
 
-    if (spec.checkRange(tutorialPlayerCastle)) {
+    if (spec.checkCastleRange(tutorialPlayerCastle)) {
       spec.setVelocity(0);
       spec.attack(tutorialPlayerCastle);
     }
@@ -299,8 +301,8 @@ function tutorialUpdate() {
 }
 
 function tutorialSelectTroop() {
-  
- if (gold - this.param2 < 0) {
+
+  if (gold - this.param2 < 0) {
     return;
   }
 
@@ -319,7 +321,7 @@ function tutorialSpawnTroop(pointer) {
     return;
   }
 
-  if(currentTroop === 1) {
+  if (currentTroop === 1) {
     tutorialTroops.push(new Infantry(this, 0, pointer.y).setDepth(1));
     gold -= tutorialTroops[tutorialTroops.length - 1].cost;
   }

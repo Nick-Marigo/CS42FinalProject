@@ -1,7 +1,8 @@
-/*  Students: Please use this week's project for Week 14: Assignment 17: Rough Draft. 
+/*  Students: Please use this week's project for Week 15: Assignment 18: Alpha. 
      You will need to replace the contents of this JavaScript file with your own work, 
      and create any other files, if any, required for the assignment.
      When you are done, be certain to submit the assignment in Canvas to be graded. */
+
 let titleScene = {
   key: 'titleScene',
   active: true,
@@ -42,7 +43,7 @@ let config = {
   physics: {
     default: 'arcade',
     arcade: {
-      debug: false
+      debug: true
     }
   },
   fps: { forceSetTimeOut: true, target: 60 },
@@ -55,15 +56,19 @@ let game = new Phaser.Game(config);
 let cursors;
 let mycamera;
 var button1, button2, button3, button4, button5;
+var arrowSpellButton, freezeSpellButton, healSpellButton;
 let goldCount;
 let gold = 250;
 let troopBarrierBottom = 700, troopBarrierTop = 200;
 let boundryBottom, boundryTop;
 let canplace = false;
+let canplaceSpell = false;
 let textCantPlace;
 let tracking_pointer = false;
 const troopbuttons = [1, 2, 3, 4, 5];
 let currentTroop = -1;
+let spells = ['None', 'Arrow', 'Freeze'];
+let currentSpell = spells[0];
 let updateCount = 1;
 let WinOrLose = false; //True equals win. False equals lose
 
@@ -103,7 +108,7 @@ function titleCreate() {
 
   var tutorial = this.add.text(600, 715, 'How to Play', { fontFamily: 'Domine', fontSize: '48px', color: '#153CD4' });
   tutorial.setInteractive({ useHandCursor: true }).setScrollFactor(0, 0).setDepth(5).setOrigin(0.5);
-  tutorial.on('pointerdown', function() {this.scene.start('tutorialScene')}, this);
+  tutorial.on('pointerdown', function() { this.scene.start('tutorialScene') }, this);
 
   mycamera = this.cameras.main;
 
@@ -130,7 +135,7 @@ function titleUpdate() {
   updateCount++;
   if (updateCount % 300 === 0) {
     titletroops.push(new Infantry(this, -325, Phaser.Math.Between(25, 875)));
-    titlenemies.push(new enemy(this, 1525, Phaser.Math.Between(25, 875)));
+    titlenemies.push(new EnemyInfantry(this, 1525, Phaser.Math.Between(25, 875)));
     updateCount = 1;
   }
 
@@ -190,8 +195,8 @@ function titleTrans() {
 
 function gamePreload() {
   this.load.image('map', 'assets/Testing/testmap.png');
-
   this.load.image('castle', 'assets/Testing/testCastle.png');
+  this.load.image('troopBoundry', 'assets/Testing/troopboundries.png');
 
   this.load.image('button1', 'assets/Testing/testButtons/buttonInfantry.png');
   this.load.image('button2', 'assets/Testing/testButtons/buttonArcher.png');
@@ -199,7 +204,10 @@ function gamePreload() {
   this.load.image('button4', 'assets/Testing/testButtons/buttonWizard.png');
   this.load.image('button5', 'assets/Testing/testButtons/buttonCalvary.png');
 
-  this.load.image('troopBoundry', 'assets/Testing/troopboundries.png');
+  this.load.image('ButtonHeal', 'assets/Testing/testButtons/healSpellButton.png');
+  this.load.image('ButtonArrow', 'assets/Testing/testButtons/arrowSpellButton.png');
+  this.load.image('ButtonFreeze', 'assets/Testing/testButtons/freezeSpellButton.png');
+  this.load.image('freezeOutline', 'assets/Testing/Spelloutline/freezeSpellOutline.png');
 
   this.load.image('infantry', 'assets/Testing/testTroops/testTroopInfantry.png');
   this.load.image('archer', 'assets/Testing/testTroops/testTroopArcher.png');
@@ -214,12 +222,12 @@ function gamePreload() {
 function gameCreate() {
 
   updateCount = 1;
-  gold = 250;
+  gold = 2500;
 
   this.add.image(3000, 500, 'map');
 
-  playerCastle = new Castle(this, 75, 450);
-  enemyCastle = new Castle(this, 5925, 450);
+  playerCastle = new Castle(this, 75, 450, 75);
+  enemyCastle = new Castle(this, 5925, 450, -75);
 
   playerCastleHealth = this.add.text(10, 16, 'Castle Health: ' + playerCastle.health, { fontFamily: 'Domine', fontSize: '40px', color: '#0000FF', stroke: '#000000', strokeThickness: 5 });
   playerCastleHealth.setScrollFactor(0, 0);
@@ -237,9 +245,9 @@ function gameCreate() {
   boundryBottom.setVisible(false);
   boundryTop.setVisible(false);
 
-  enemyTroops.push(new enemy(this, 800, 500));
-  enemyTroops.push(new enemy(this, 900, 500));
-  enemyTroops.push(new enemy(this, 1000, 500));
+  enemyTroops.push(new EnemyInfantry(this, 1000, 600));
+  enemyTroops.push(new EnemyInfantry(this, 1000, 450));
+  enemyTroops.push(new EnemyInfantry(this, 1000, 300));
 
   button1 = this.add.image(200, 850, 'button1');
   button1.setInteractive();
@@ -261,6 +269,18 @@ function gameCreate() {
   button5.setInteractive();
   button5.setScrollFactor(0, 0);
 
+  healSpellButton = this.add.image(700, 850, 'ButtonHeal');
+  healSpellButton.setInteractive();
+  healSpellButton.setScrollFactor(0, 0);
+
+  arrowSpellButton = this.add.image(800, 850, 'ButtonArrow');
+  arrowSpellButton.setInteractive();
+  arrowSpellButton.setScrollFactor(0, 0);
+
+  freezeSpellButton = this.add.image(900, 850, 'ButtonFreeze');
+  freezeSpellButton.setInteractive();
+  freezeSpellButton.setScrollFactor(0, 0);
+
   mycamera = this.cameras.main;
   cursors = this.input.keyboard.createCursorKeys();
   this.cameras.main.setBounds(0, 0, 6000, 1000);
@@ -280,11 +300,20 @@ function gameCreate() {
 
   button5.on('pointerdown', selectTroop, { param1: troopbuttons[4], param2: 200 });
 
+  healSpellButton.on('pointerdown', healCastle, this);
+
+  arrowSpellButton.on('pointerdown', selectSpell, { param1: spells[1], param2: 150 });
+
+  freezeSpellButton.on('pointerdown', selectSpell, { param1: spells[2], param2: 150 });
+
   this.input.on('pointerup', spawnTroop, this);
+  this.input.on('pointerup', placeSpell, this);
 
 }
 
 function gameUpdate() {
+
+  console.log(currentSpell);
 
   updateCount++;
 
@@ -334,6 +363,11 @@ function gameUpdate() {
       return;
     }
 
+    if (spec.freeze) {
+      spec.freezeTroop();
+      return;
+    }
+
     let foundMatch = false;
     for (let count = 0; count < enemyTroops.length; count++) {
       if (spec.checkRange(enemyTroops[count]) && enemyTroops[count].alive) {
@@ -348,7 +382,7 @@ function gameUpdate() {
       spec.setVelocityX(spec.speed);
     }
 
-    if (spec.checkRange(enemyCastle)) {
+    if (spec.checkCastleRange(enemyCastle)) {
       spec.setVelocity(0);
       spec.attack(enemyCastle);
     }
@@ -358,6 +392,11 @@ function gameUpdate() {
   enemyTroops.forEach((spec) => {
 
     if (!spec.alive) {
+      return;
+    }
+
+    if (spec.freeze) {
+      spec.freezeTroop();
       return;
     }
 
@@ -375,7 +414,7 @@ function gameUpdate() {
       spec.setVelocityX(spec.speed);
     }
 
-    if (spec.checkRange(playerCastle)) {
+    if (spec.checkCastleRange(playerCastle)) {
       spec.setVelocity(0);
       spec.attack(playerCastle);
     }
@@ -411,27 +450,141 @@ function spawnTroop(pointer) {
   }
 
   if (currentTroop === 2) {
-    this.physics.add.sprite(0, pointer.y, 'archer').setVelocityX(50);
-    //gold -= Troops[Troops.length - 1].cost;
+    Troops.push(new Archer(this, 0, pointer.y));
+    gold -= Troops[Troops.length - 1].cost;
   }
 
   if (currentTroop === 3) {
-    this.physics.add.sprite(0, pointer.y, 'tank').setVelocityX(50);
-    //gold -= Troops[Troops.length - 1].cost;
+    Troops.push(new Tank(this, 0, pointer.y));
+    gold -= Troops[Troops.length - 1].cost;
   }
 
   if (currentTroop === 4) {
-    this.physics.add.sprite(0, pointer.y, 'wizard').setVelocityX(50);
-    //gold -= Troops[Troops.length - 1].cost;
+    Troops.push(new Wizard(this, 0, pointer.y));
+    gold -= Troops[Troops.length - 1].cost;
   }
 
   if (currentTroop === 5) {
-    this.physics.add.sprite(0, pointer.y, 'calvary').setVelocityX(50);
-    //gold -= Troops[Troops.length - 1].cost;
+    Troops.push(new Calvary(this, 0, pointer.y));
+    gold -= Troops[Troops.length - 1].cost;
   }
 
   currentTroop = -1;
   canplace = false;
+
+}
+
+function healCastle() {
+
+  if (gold < 300) {
+    return;
+  }
+
+  if (playerCastle.health >= 500) {
+    return;
+  }
+
+  gold -= 300;
+  playerCastle.heal();
+
+}
+
+//function rainArrows() {
+
+//}
+
+function selectSpell() {
+  if (gold - this.param2 < 0) {
+    return;
+  }
+
+  canplaceSpell = true;
+  currentSpell = this.param1;
+}
+
+
+function placeSpell(pointer) {
+
+  if (pointer.position.y < troopBarrierTop || pointer.position.y > troopBarrierBottom) {
+    return;
+  }
+
+  if (currentSpell === 'None') {
+    return;
+  }
+
+
+  //************************************************************************
+  // ARROW SPELL
+  //************************************************************************
+  if (currentSpell === 'Arrow') {
+    boxL = pointer.x - 200;
+    boxR = pointer.x + 200;
+    boxT = pointer.y - 50;
+    boxB = pointer.y + 50;
+
+    Troops.forEach((spec) => {
+      if (!spec.alive) {
+        return;
+      }
+
+      if (boxL < spec.x && spec.x < boxR && boxT < spec.y && spec.y < boxB) {
+        spec.arrowDrop();
+      }
+    });
+
+    enemyTroops.forEach((spec) => {
+      if (!spec.alive) {
+        return;
+      }
+
+      if (boxL < spec.x && spec.x < boxR && boxT < spec.y && spec.y < boxB) {
+        spec.arrowDrop();
+      }
+
+    });
+
+    gold -= 150;
+
+  }
+
+  //************************************************************************
+  // FREEZE SPELL
+  //************************************************************************
+  if (currentSpell === 'Freeze') {
+    boxL = pointer.x - 100;
+    boxR = pointer.x + 100;
+    boxT = pointer.y - 100;
+    boxB = pointer.y + 100;
+
+    Troops.forEach((spec) => {
+      if (!spec.alive) {
+        return;
+      }
+
+      if (boxL < spec.x && spec.x < boxR && boxT < spec.y && spec.y < boxB) {
+        spec.freeze = true;
+      }
+    });
+
+    enemyTroops.forEach((spec) => {
+      if (!spec.alive) {
+        return;
+      }
+
+      if (boxL < spec.x && spec.x < boxR && boxT < spec.y && spec.y < boxB) {
+        spec.freeze = true;
+      }
+
+    });
+
+    gold -= 150;
+
+  }
+
+
+  currentSpell = spells[0];
+  canplaceSpell = false;
 
 }
 
