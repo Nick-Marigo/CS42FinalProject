@@ -64,13 +64,16 @@ let boundryBottom, boundryTop;
 let canplace = false;
 let canplaceSpell = false;
 let textCantPlace;
+let textCantPlaceSpell;
 let tracking_pointer = false;
 const troopbuttons = [1, 2, 3, 4, 5];
 let currentTroop = -1;
-let spells = ['None', 'Arrow', 'Freeze'];
+const spells = ['None', 'Arrow', 'Freeze'];
 let currentSpell = spells[0];
 let updateCount = 1;
 let WinOrLose = false; //True equals win. False equals lose
+let outlines = [];
+let currentOutline = -1;
 
 var Troops = [];
 var enemyTroops = [];
@@ -206,6 +209,7 @@ function gamePreload() {
 
   this.load.image('ButtonHeal', 'assets/Testing/testButtons/healSpellButton.png');
   this.load.image('ButtonArrow', 'assets/Testing/testButtons/arrowSpellButton.png');
+  this.load.image('arrowOutline', 'assets/Testing/Spelloutline/arrowSpellOutline.png');
   this.load.image('ButtonFreeze', 'assets/Testing/testButtons/freezeSpellButton.png');
   this.load.image('freezeOutline', 'assets/Testing/Spelloutline/freezeSpellOutline.png');
 
@@ -248,38 +252,35 @@ function gameCreate() {
   enemyTroops.push(new EnemyInfantry(this, 1000, 600));
   enemyTroops.push(new EnemyInfantry(this, 1000, 450));
   enemyTroops.push(new EnemyInfantry(this, 1000, 300));
+  enemyTroops.push(new EnemyInfantry(this, 900, 450));
+  enemyTroops.push(new EnemyInfantry(this, 1100, 450));
 
-  button1 = this.add.image(200, 850, 'button1');
-  button1.setInteractive();
-  button1.setScrollFactor(0, 0);
+  let outlineImage = ['infantry', 'archer', 'tank', 'wizard', 'calvary', 'arrowOutline', 'freezeOutline'];
+  for (let count = 0; count < 7; count++) {
+    outlines.push(this.add.image(500, 400, outlineImage[count]));
+    outlines[count].setDepth(4).setScrollFactor(0, 0).setVisible(false);
+    if (count > 4) {
+      outlines[count].alpha = .5;
+    }
+  }
 
-  button2 = this.add.image(300, 850, 'button2');
-  button2.setInteractive();
-  button2.setScrollFactor(0, 0);
+  button1 = this.add.image(200, 850, 'button1').setInteractive().setScrollFactor(0, 0);
 
-  button3 = this.add.image(400, 850, 'button3');
-  button3.setInteractive();
-  button3.setScrollFactor(0, 0);
+  button2 = this.add.image(300, 850, 'button2').setInteractive().setScrollFactor(0, 0);
 
-  button4 = this.add.image(500, 850, 'button4');
-  button4.setInteractive();
-  button4.setScrollFactor(0, 0);
+  button3 = this.add.image(400, 850, 'button3').setInteractive().setScrollFactor(0, 0);
 
-  button5 = this.add.image(600, 850, 'button5');
-  button5.setInteractive();
-  button5.setScrollFactor(0, 0);
+  button4 = this.add.image(500, 850, 'button4').setInteractive().setScrollFactor(0, 0);
 
-  healSpellButton = this.add.image(700, 850, 'ButtonHeal');
-  healSpellButton.setInteractive();
-  healSpellButton.setScrollFactor(0, 0);
+  button5 = this.add.image(600, 850, 'button5').setInteractive().setScrollFactor(0, 0);
 
-  arrowSpellButton = this.add.image(800, 850, 'ButtonArrow');
-  arrowSpellButton.setInteractive();
-  arrowSpellButton.setScrollFactor(0, 0);
+  healSpellButton = this.add.image(700, 850, 'ButtonHeal').setInteractive().setScrollFactor(0, 0);
 
-  freezeSpellButton = this.add.image(900, 850, 'ButtonFreeze');
-  freezeSpellButton.setInteractive();
-  freezeSpellButton.setScrollFactor(0, 0);
+  arrowSpellButton = this.add.image(800, 850, 'ButtonArrow').setInteractive().setScrollFactor(0, 0);
+
+  freezeSpellButton = this.add.image(900, 850, 'ButtonFreeze').setInteractive().setScrollFactor(0, 0);
+  freezeOutline = this.add.image(500, 400, 'freezeOutline').setDepth(4).setScrollFactor(0, 0).setVisible(false);
+  freezeOutline.alpha = .5;
 
   mycamera = this.cameras.main;
   cursors = this.input.keyboard.createCursorKeys();
@@ -287,24 +288,27 @@ function gameCreate() {
 
   textCantPlace = this.add.text(mycamera.x + 350, mycamera.y + 450, 'Can not place troop there!',
     { fontFamily: 'Domine', fontSize: '40px', color: '#FC2605', stroke: '#000000', strokeThickness: 5 });
-  textCantPlace.setVisible(false);
-  textCantPlace.setScrollFactor(0, 0);
+  textCantPlace.setVisible(false).setScrollFactor(0, 0).setDepth(3);
 
-  button1.on('pointerdown', selectTroop, { param1: troopbuttons[0], param2: 50 });
+  textCantPlaceSpell = this.add.text(mycamera.x + 350, mycamera.y + 450, 'Can not place Spell there!',
+    { fontFamily: 'Domine', fontSize: '40px', color: '#FC2605', stroke: '#000000', strokeThickness: 5 });
+  textCantPlaceSpell.setVisible(false).setScrollFactor(0, 0).setDepth(3);
 
-  button2.on('pointerdown', selectTroop, { param1: troopbuttons[1], param2: 50 });
+  button1.on('pointerdown', selectTroop, { param1: troopbuttons[0], param2: 50, param3: 0 });
 
-  button3.on('pointerdown', selectTroop, { param1: troopbuttons[2], param2: 75 });
+  button2.on('pointerdown', selectTroop, { param1: troopbuttons[1], param2: 50, param3: 1 });
 
-  button4.on('pointerdown', selectTroop, { param1: troopbuttons[3], param2: 100 });
+  button3.on('pointerdown', selectTroop, { param1: troopbuttons[2], param2: 75, param3: 2 });
 
-  button5.on('pointerdown', selectTroop, { param1: troopbuttons[4], param2: 200 });
+  button4.on('pointerdown', selectTroop, { param1: troopbuttons[3], param2: 100, param3: 3 });
+
+  button5.on('pointerdown', selectTroop, { param1: troopbuttons[4], param2: 200, param3: 4 });
 
   healSpellButton.on('pointerdown', healCastle, this);
 
-  arrowSpellButton.on('pointerdown', selectSpell, { param1: spells[1], param2: 150 });
+  arrowSpellButton.on('pointerdown', selectSpell, { param1: spells[1], param2: 150, param3: 5 });
 
-  freezeSpellButton.on('pointerdown', selectSpell, { param1: spells[2], param2: 150 });
+  freezeSpellButton.on('pointerdown', selectSpell, { param1: spells[2], param2: 150, param3: 6 });
 
   this.input.on('pointerup', spawnTroop, this);
   this.input.on('pointerup', placeSpell, this);
@@ -313,9 +317,8 @@ function gameCreate() {
 
 function gameUpdate() {
 
-  console.log(currentSpell);
-
   updateCount++;
+  trackMouse();
 
   if (updateCount % 300 === 0) {
     gold += 30;
@@ -352,6 +355,18 @@ function gameUpdate() {
       boundryTop.setVisible(false);
     } else {
       textCantPlace.setVisible(true);
+      boundryBottom.setVisible(true);
+      boundryTop.setVisible(true);
+    }
+  }
+
+  if (canplaceSpell) {
+    if (game.input.mousePointer.y > troopBarrierTop && game.input.mousePointer.y < troopBarrierBottom) {
+      textCantPlaceSpell.setVisible(false);
+      boundryBottom.setVisible(false);
+      boundryTop.setVisible(false);
+    } else {
+      textCantPlaceSpell.setVisible(true);
       boundryBottom.setVisible(true);
       boundryTop.setVisible(true);
     }
@@ -423,18 +438,38 @@ function gameUpdate() {
 
 }
 
+function trackMouse() {
+  if (currentOutline < 0) {
+    return;
+  }
+
+  outlines[currentOutline].setVisible(true);
+  outlines[currentOutline].setPosition(game.input.mousePointer.x, game.input.mousePointer.y);
+
+}
+
 function selectTroop() {
 
   if (gold - this.param2 < 0) {
     return;
   }
 
+  if (currentOutline != -1) {
+    outlines[currentOutline].setVisible(false);
+  }
+
   canplace = true;
+  canplaceSpell = false;
   currentTroop = this.param1;
+  currentOutline = this.param3;
 
 }
 
 function spawnTroop(pointer) {
+
+  if (!canplace) {
+    return;
+  }
 
   if (pointer.position.y < troopBarrierTop || pointer.position.y > troopBarrierBottom) {
     return;
@@ -470,6 +505,8 @@ function spawnTroop(pointer) {
   }
 
   currentTroop = -1;
+  outlines[currentOutline].setVisible(false);
+  currentOutline = -1;
   canplace = false;
 
 }
@@ -489,21 +526,27 @@ function healCastle() {
 
 }
 
-//function rainArrows() {
-
-//}
-
 function selectSpell() {
   if (gold - this.param2 < 0) {
     return;
   }
 
+  if (currentOutline != -1) {
+    outlines[currentOutline].setVisible(false);
+  }
+
   canplaceSpell = true;
+  canplace = false;
   currentSpell = this.param1;
+  currentOutline = this.param3;
 }
 
 
 function placeSpell(pointer) {
+
+  if (!canplaceSpell) {
+    return;
+  }
 
   if (pointer.position.y < troopBarrierTop || pointer.position.y > troopBarrierBottom) {
     return;
@@ -584,6 +627,8 @@ function placeSpell(pointer) {
 
 
   currentSpell = spells[0];
+  outlines[currentOutline].setVisible(false);
+  currentOutline = -1;
   canplaceSpell = false;
 
 }
@@ -604,6 +649,7 @@ function WinOrLoseCreate() {
   enemyTroops = [];
   titletroops = [];
   titlenemies = [];
+  outlines = [];
 
 
   if (WinOrLose) {

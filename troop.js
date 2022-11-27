@@ -1,5 +1,5 @@
 class Troop extends Phaser.Physics.Arcade.Sprite {
-  constructor(scene, x, y, trooptype, frame, dx, dy, healthValue, damageValue, cost, range, speed) { 
+  constructor(scene, x, y, trooptype, frame, dx, dy, healthValue, damageValue, cost, range, speed) {
     //scene, pos x, pos y, string(texture), frame(null), Health, damage, cost, range, speed
     super(scene, x, y, trooptype, healthValue, damageValue, cost, speed);
 
@@ -118,7 +118,7 @@ class Troop extends Phaser.Physics.Arcade.Sprite {
 
   freezeTroop() {
     //console.log('Calling freezeTroop');
-    if(this.freezeCoolDown ===  0) {
+    if (this.freezeCoolDown === 0) {
       //console.log('if true');
       this.setVelocityX(this.speed);
       this.freeze = false;
@@ -128,10 +128,10 @@ class Troop extends Phaser.Physics.Arcade.Sprite {
       this.setVelocityX(0);
     }
 
-    if(this.freezeCoolDown > 0) {
+    if (this.freezeCoolDown > 0) {
       this.freezeCoolDown--;
     }
-    
+
   }
 
   arrowDrop() {
@@ -175,7 +175,7 @@ class Calvary extends Troop {
 
 class EnemyInfantry extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'enemy', null, 25, 40, 100, 30, 50, 10, -40);
+    super(scene, x, y, 'enemy', null, 25, 40, 100, 30, 50, 10, -30);
   }
 }
 
