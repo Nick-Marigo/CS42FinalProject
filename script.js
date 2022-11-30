@@ -111,7 +111,7 @@ function gamePreload() {
 function gameCreate() {
 
   updateCount = 1;
-  gold = 2500;
+  gold = 500;
 
   troopBarrierBottom = 700;
   troopBarrierTop = 200;
@@ -176,7 +176,7 @@ function gameCreate() {
 
   mycamera = this.cameras.main;
   cursors = this.input.keyboard.createCursorKeys();
-  this.cameras.main.setBounds(0, 0, 6000, 1000);
+  this.cameras.main.setBounds(0, 0, 4000, 900);
 
   textCantPlace = this.add.text(mycamera.x + 350, mycamera.y + 450, 'Can not place troop there!',
     { fontFamily: 'Domine', fontSize: '40px', color: '#FC2605', stroke: '#000000', strokeThickness: 5 });
@@ -543,6 +543,12 @@ function placeSpell(pointer) {
 function WinOrLosePreload() {
   this.load.image('winbackground', 'assets/Testing/winscene.png');
   this.load.image('losebackground', 'assets/Testing/losescene.png');
+  if(WinOrLose) {
+  this.load.audio('winMusicOne', 'Audio/Music/Victory.mp3');
+  this.load.audio('winMusicTwo', 'Audio/Music/Won.wav');
+  } else {
+    this.load.audio('loseMusic', 'Audio/Music/sadending.ogg');
+  }
 }
 
 function WinOrLoseCreate() {
@@ -558,12 +564,18 @@ function WinOrLoseCreate() {
   if (WinOrLose) {
     this.add.image(600, 450, 'winbackground');
     this.add.text(600, 250, 'You Won!', { fontFamily: 'Domine', fontSize: '48px', color: '#153CD4' }).setOrigin(0.5).setScrollFactor(0, 0).setDepth(5);
+    music = this.sound.add('winMusicOne');
+    music.play({volume: .2, loop: true});
+    let temp = this.sound.add('winMusicTwo');
+    temp.play({ volume: 0.2});
   } else {
     this.add.image(600, 450, 'losebackground');
     this.add.text(600, 250, 'You Lost!', { fontFamily: 'Domine', fontSize: '48px', color: '#153CD4' }).setOrigin(0.5).setScrollFactor(0, 0).setDepth(5);
     let textTryAgain = this.add.text(600, 350, 'Try Again', { fontFamily: 'Domine', fontSize: '48px', color: '#153CD4' });
     textTryAgain.setInteractive({ userHandCursor: true }).setOrigin(0.5).setScrollFactor(0, 0).setDepth(5);
     textTryAgain.on('pointerdown', currentLevelTrans, this);
+    music = this.sound.add('loseMusic');
+    music.play({volume: 0.4, loop: true});
   }
 
   let textLS = this.add.text(600, 550, 'Return to Level Selection', { fontFamily: 'Domine', fontSize: '48px', color: '#153CD4' });
@@ -581,6 +593,7 @@ function WinOrLoseUpdate() {
 }
 
 function currentLevelTrans() {
+  music.pause();
   this.scene.start('gamePlayScene');
 }
 
@@ -589,5 +602,6 @@ function currentLevelTrans() {
 //}
 
 function toTitleTrans() {
+  music.pause();
   this.scene.start('titleScene');
 }
