@@ -175,7 +175,7 @@ class Calvary extends Troop {
 
 class EnemyInfantry extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'enemy', null, 25, 40, 100, 30, 50, 10, -30);
+    super(scene, x, y, 'infantry', null, 25, 40, 100, 30, 50, 10, -30);
   }
 }
 

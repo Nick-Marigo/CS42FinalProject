@@ -3,22 +3,6 @@
      and create any other files, if any, required for the assignment.
      When you are done, be certain to submit the assignment in Canvas to be graded. */
 
-let titleScene = {
-  key: 'titleScene',
-  active: true,
-  preload: titlePreload,
-  create: titleCreate,
-  update: titleUpdate
-};
-
-/*let levelSelection = {
-  key: 'levelSelection',
-  active: false,
-  preload: levelPreload,
-  create: levelCreate,
-  update: levelUpdate
-}*/
-
 let gamePlayScene = {
   key: "gamePlayScene",
   active: false,
@@ -59,7 +43,7 @@ var button1, button2, button3, button4, button5;
 var arrowSpellButton, freezeSpellButton, healSpellButton;
 let goldCount;
 let gold = 250;
-let troopBarrierBottom = 700, troopBarrierTop = 200;
+let troopBarrierBottom, troopBarrierTop;
 let boundryBottom, boundryTop;
 let canplace = false;
 let canplaceSpell = false;
@@ -83,114 +67,8 @@ let playerCastleHealth;
 var enemyCastle;
 let enemyCastleHealth;
 
-
-//********************************************************************************************************************
-//TITLE SCENE
-//********************************************************************************************************************
-
-function titlePreload() {
-
-  this.load.image('map', 'assets/Testing/testmap.png');
-  this.load.image('infantry', 'assets/Testing/testTroops/testTroopInfantry.png');
-  this.load.image('enemy', 'assets/Testing/testTroops/testenemy.png');
-  this.load.image('textBackground', 'assets/Testing/Title/textBackground.png');
-
-}
-
-function titleCreate() {
-
-  this.add.image(0, 500, 'map').setDepth(1);
-  this.add.image(600, 450, 'textBackground').setDepth(3).setScrollFactor(0, 0);
-
-  var title = this.add.text(600, 250, 'For Warriors Peace', { fontFamily: 'Domine', fontSize: '48px', color: '#153CD4' });
-  title.setOrigin(0.5).setScrollFactor(0, 0).setDepth(5);
-
-  var startText = this.add.text(600, 450, 'Start Game!', { fontFamily: 'Domine', fontSize: '48px', color: '#153CD4' });
-  startText.setOrigin(0.5).setInteractive({ useHandCursor: true }).setScrollFactor(0, 0).setDepth(5);
-  startText.on('pointerdown', titleTrans, this);
-
-  var tutorial = this.add.text(600, 715, 'How to Play', { fontFamily: 'Domine', fontSize: '48px', color: '#153CD4' });
-  tutorial.setInteractive({ useHandCursor: true }).setScrollFactor(0, 0).setDepth(5).setOrigin(0.5);
-  tutorial.on('pointerdown', function() { this.scene.start('tutorialScene') }, this);
-
-  mycamera = this.cameras.main;
-
-  updateCount = 1;
-
-}
-
-let titletroops = [];
-let titlenemies = [];
-let cameraCount = 1;
-
-function titleUpdate() {
-
-  cameraCount++;
-  if (cameraCount < 300) {
-    mycamera.scrollX += 1;
-  } else {
-    mycamera.scrollX -= 1;
-    if (cameraCount > 600) {
-      cameraCount = 1;
-    }
-  }
-
-  updateCount++;
-  if (updateCount % 300 === 0) {
-    titletroops.push(new Infantry(this, -325, Phaser.Math.Between(25, 875)));
-    titlenemies.push(new EnemyInfantry(this, 1525, Phaser.Math.Between(25, 875)));
-    updateCount = 1;
-  }
-
-  titletroops.forEach((spec) => {
-
-    if (!spec.alive) {
-      return;
-    }
-
-    let foundMatch = false;
-    for (let count = 0; count < titlenemies.length; count++) {
-      if (spec.checkRange(titlenemies[count]) && titlenemies[count].alive) {
-        spec.setVelocityX(0);
-        spec.attack(titlenemies[count]);
-        foundMatch = true;
-        break;
-      }
-    }
-
-    if (!foundMatch) {
-      spec.setVelocityX(spec.speed);
-    }
-
-  });
-
-  titlenemies.forEach((spec) => {
-
-    if (!spec.alive) {
-      return;
-    }
-
-    let foundMatch = false;
-    for (let count = 0; count < titletroops.length; count++) {
-      if (spec.checkRange(titletroops[count]) && titletroops[count].alive) {
-        spec.setVelocityX(0);
-        spec.attack(titletroops[count]);
-        foundMatch = true;
-        break;
-      }
-    }
-
-    if (!foundMatch) {
-      spec.setVelocityX(spec.speed);
-    }
-
-  });
-
-}
-
-function titleTrans() {
-  this.scene.start('gamePlayScene');
-}
+let music;
+let selectSound, placeSound, healSound;
 
 //********************************************************************************************************************
 //GAMEPLAY SCENE
@@ -221,6 +99,13 @@ function gamePreload() {
 
   this.load.image('enemy', 'assets/Testing/testTroops/testenemy.png');
 
+  this.load.audio('gameplayMusic', 'Audio/Music/Showdown.mp3');
+  this.load.audio('FreezeSound', 'Audio/SoundEffects/freeze2.ogg');
+  this.load.audio('SelectSound', 'Audio/SoundEffects/Menu1A.wav');
+  this.load.audio('PlaceSound', 'Audio/SoundEffects/Menu1B.wav');
+  this.load.audio('HealSound', 'Audio/SoundEffects/heal.ogg');
+  this.load.audio('ArrowSound', 'Audio/SoundEffects/ArchersShooting.ogg');
+
 }
 
 function gameCreate() {
@@ -228,10 +113,20 @@ function gameCreate() {
   updateCount = 1;
   gold = 2500;
 
+  troopBarrierBottom = 700;
+  troopBarrierTop = 200;
+
+  music = this.sound.add('gameplayMusic');
+  music.play({volume: 0.1, loop: true});
+
+  placeSound = this.sound.add('PlaceSound');
+  selectSound = this.sound.add('SelectSound');
+  healSound = this.sound.add('HealSound');
+
   this.add.image(3000, 500, 'map');
 
   playerCastle = new Castle(this, 75, 450, 75);
-  enemyCastle = new Castle(this, 5925, 450, -75);
+  enemyCastle = new Castle(this, 3925, 450, -75);
 
   playerCastleHealth = this.add.text(10, 16, 'Castle Health: ' + playerCastle.health, { fontFamily: 'Domine', fontSize: '40px', color: '#0000FF', stroke: '#000000', strokeThickness: 5 });
   playerCastleHealth.setScrollFactor(0, 0);
@@ -239,15 +134,13 @@ function gameCreate() {
   enemyCastleHealth = this.add.text(690, 16, 'Enemy Castle Health: ' + enemyCastle.health, { fontFamily: 'Domine', fontSize: '40px', color: '#FF0000', stroke: '#000000', strokeThickness: 5 });
   enemyCastleHealth.setScrollFactor(0, 0);
 
-  this.physics.world.setBounds(0, 0, 6000, 1000);
+  this.physics.world.setBounds(0, 0, 4000, 900);
 
   goldCount = this.add.text(20, 830, 'Gold: ' + gold, { fontFamily: 'Domine', fontSize: '30px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 });
   goldCount.setScrollFactor(0, 0);
 
-  boundryBottom = this.add.image(3000, troopBarrierBottom, 'troopBoundry');
-  boundryTop = this.add.image(3000, troopBarrierTop, 'troopBoundry');
-  boundryBottom.setVisible(false);
-  boundryTop.setVisible(false);
+  boundryBottom = this.add.image(3000, troopBarrierBottom, 'troopBoundry').setVisible(false);
+  boundryTop = this.add.image(3000, troopBarrierTop, 'troopBoundry').setVisible(false);
 
   enemyTroops.push(new EnemyInfantry(this, 1000, 600));
   enemyTroops.push(new EnemyInfantry(this, 1000, 450));
@@ -279,8 +172,7 @@ function gameCreate() {
   arrowSpellButton = this.add.image(800, 850, 'ButtonArrow').setInteractive().setScrollFactor(0, 0);
 
   freezeSpellButton = this.add.image(900, 850, 'ButtonFreeze').setInteractive().setScrollFactor(0, 0);
-  freezeOutline = this.add.image(500, 400, 'freezeOutline').setDepth(4).setScrollFactor(0, 0).setVisible(false);
-  freezeOutline.alpha = .5;
+
 
   mycamera = this.cameras.main;
   cursors = this.input.keyboard.createCursorKeys();
@@ -336,11 +228,13 @@ function gameUpdate() {
 
   if (playerCastle.health <= 0) {
     WinOrLose = false;
+    music.pause();
     this.scene.start('WinOrLoseScene');
   }
 
   if (enemyCastle.health <= 0) {
     WinOrLose = true;
+    music.pause();
     this.scene.start('WinOrLoseScene');
   }
 
@@ -458,6 +352,7 @@ function selectTroop() {
     outlines[currentOutline].setVisible(false);
   }
 
+  selectSound.play({volume: .1});
   canplace = true;
   canplaceSpell = false;
   currentTroop = this.param1;
@@ -504,6 +399,7 @@ function spawnTroop(pointer) {
     gold -= Troops[Troops.length - 1].cost;
   }
 
+  placeSound.play({volume: .1});
   currentTroop = -1;
   outlines[currentOutline].setVisible(false);
   currentOutline = -1;
@@ -521,6 +417,7 @@ function healCastle() {
     return;
   }
 
+  healSound.play({volume: .2});
   gold -= 300;
   playerCastle.heal();
 
@@ -535,6 +432,7 @@ function selectSpell() {
     outlines[currentOutline].setVisible(false);
   }
 
+  selectSound.play({volume: .1});
   canplaceSpell = true;
   canplace = false;
   currentSpell = this.param1;
@@ -588,6 +486,8 @@ function placeSpell(pointer) {
     });
 
     gold -= 150;
+    let temp = this.sound.add('ArrowSound');
+    temp.play({volume: 0.5, loop: false});
 
   }
 
@@ -621,11 +521,14 @@ function placeSpell(pointer) {
 
     });
 
-    gold -= 150;
+    gold -= 150; 
+
+    let temp = this.sound.add('FreezeSound');
+    temp.play({volume: 0.1, loop: false});
 
   }
 
-
+  placeSound.play({volume: .1});
   currentSpell = spells[0];
   outlines[currentOutline].setVisible(false);
   currentOutline = -1;
