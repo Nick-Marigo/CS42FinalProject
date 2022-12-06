@@ -156,7 +156,7 @@ function tutorialCreate() {
 }
 
 function tutorialUpdate() {
-  
+
   updateCount++;
 
   if (updateCount % 300 === 0) {

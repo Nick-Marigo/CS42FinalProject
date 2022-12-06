@@ -18,12 +18,12 @@ class Castle extends Phaser.Physics.Arcade.Sprite {
 
   heal() {
 
-    if(this.health + 125 > 500) {
+    if (this.health + 125 > 500) {
       return this.health = 500;
     } else {
       return this.health += 125;
     }
-    
+
   }
 
 }

@@ -14,9 +14,12 @@ class Troop extends Phaser.Physics.Arcade.Sprite {
     this.freeze = false;
 
     this.setTexture(this.trooptype);
+    this.setScale(1.2);
     this.setPosition(x, y);
     this.setDepth(2);
 
+    this.play(this.trooptype + 'walk');
+    
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
@@ -72,13 +75,38 @@ class Troop extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
+  checkGoldmineRange(goldmine) {
+    let deltaX = false;
+    let deltaY = false;
+
+    deltaX = (Math.abs((this.x - (this.dx) - (goldmine.x + goldmine.dx)) < this.range));
+
+    if (this.y == goldmine.y) {
+      deltaY = true;
+    } else if (this.y > goldmine.y) {
+      deltaY = (this.y - this.dy) < (goldmine.y + goldmine.dy);
+    } else if (this.y < goldmine.y) {
+      deltaY = (this.y + this.dy) > (goldmine.y - goldmine.dy);
+    }
+
+    if (deltaX && deltaY) {
+      return true;
+    } else {
+      return false;
+    }
+
+  }
+
   damage(amount) {
     if (this.hp.decrease(amount)) {
       this.alive = false;
 
-      //this.play(this.color + 'Dead');
+      this.play(this.trooptype + 'death');
 
-      this.setVisible(false);
+      setTimeout(() => {
+        this.setVisible(false);
+      }, 500);
+
       this.disableBody();
       this.hp.deleteHealthBar();
     }
@@ -90,6 +118,8 @@ class Troop extends Phaser.Physics.Arcade.Sprite {
 
     if (target && this.alive && this.coolDown === 0) {
       //this.play(this.color + 'Attack');
+
+      this.play(this.trooptype + 'attack');
 
       //var offset = (this.color === 'blue') ? 20 : -20;
       //var targetX = (this.color === 'blue') ? target.x + 30 : target.x - 30;
@@ -109,6 +139,10 @@ class Troop extends Phaser.Physics.Arcade.Sprite {
       target.healthValue -= this.damageValue;
       target.damage(this.damageValue);
       this.coolDown = this.maxCoolDown;
+    }
+
+    if (!target.alive) {
+      this.play(this.trooptype + 'walk');
     }
 
     if (this.coolDown > 0) {
@@ -139,11 +173,15 @@ class Troop extends Phaser.Physics.Arcade.Sprite {
     this.damage(50);
   }
 
+  followTroop() {
+    this.hp.healthFollowTroop(this.x);
+  }
+
 }
 
 class Infantry extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'infantry', null, 25, 40, 100, 30, 50, 10, 30);
+    super(scene, x, y, 'Infantry', null, 25, 40, 100, 30, 50, 10, 35);
     //scene, pos x, pos y, string(texture), frame(null), 
     //Different X, difference y, Health, damage, cost, range, speed
   }
@@ -151,54 +189,54 @@ class Infantry extends Troop {
 
 class Archer extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'archer', null, 25, 40, 75, 40, 50, 150, 40);
+    super(scene, x, y, 'Archer', null, 25, 40, 75, 40, 50, 150, 40);
   }
 }
 
 class Tank extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'tank', null, 25, 40, 250, 10, 75, 25, 30);
+    super(scene, x, y, 'Tank', null, 25, 40, 250, 10, 75, 25, 30);
   }
 }
 
 class Wizard extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'wizard', null, 25, 40, 50, 60, 75, 100, 30);
+    super(scene, x, y, 'Wizard', null, 25, 40, 50, 60, 75, 100, 30);
   }
 }
 
 class Calvary extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'calvary', null, 75, 60, 150, 65, 200, 25, 45);
+    super(scene, x, y, 'Calvary', null, 75, 60, 150, 65, 200, 25, 45);
   }
 }
 
 class EnemyInfantry extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'infantry', null, 25, 40, 100, 30, 50, 10, -30);
+    super(scene, x, y, 'EnemyInfantry', null, 25, 40, 100, 30, 50, 10, -30);
   }
 }
 
 class EnemyArcher extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'archer', null, 25, 40, 75, 40, 50, 150, -40);
+    super(scene, x, y, 'EnemyArcher', null, 25, 40, 75, 40, 50, 150, -40);
   }
 }
 
 class EnemyTank extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'tank', null, 25, 40, 250, 10, 75, 25, -30);
+    super(scene, x, y, 'EnemyTank', null, 25, 40, 250, 10, 75, 25, -30);
   }
 }
 
 class EnemyWizard extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'wizard', null, 25, 40, 50, 60, 75, 100, -30);
+    super(scene, x, y, 'EnemyWizard', null, 25, 40, 50, 60, 75, 100, -30);
   }
 }
 
 class EnemyCalvary extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'calvary', null, 75, 60, 150, 65, 200, 25, -45);
+    super(scene, x, y, 'EnemyCalvary', null, 75, 60, 150, 65, 200, 25, -45);
   }
 }

@@ -23,11 +23,19 @@ let clicks = 0;
 function titlePreload() {
 
   this.load.image('map', 'assets/Testing/testmap.png');
-  this.load.image('infantry', 'assets/Testing/testTroops/testTroopInfantry.png');
-  this.load.image('archer', 'assets/Testing/testTroops/testTroopArcher.png');
-  this.load.image('tank', 'assets/Testing/testTroops/testTroopTank.png');
-  this.load.image('wizard', 'assets/Testing/testTroops/testTroopWizard.png');
-  this.load.image('calvary', 'assets/Testing/testTroops/testTroopCalvary.png');
+
+  this.load.spritesheet('Infantry', 'finalAssets/Troops/Infantry.png', { frameWidth: 50, frameHeight: 100 });
+  this.load.spritesheet('Archer', 'finalAssets/Troops/Archer.png', { frameWidth: 50, frameHeight: 84 });
+  this.load.spritesheet('Tank', 'finalAssets/Troops/Tank.png', { frameWidth: 50, frameHeight: 100 });
+  this.load.spritesheet('Wizard', 'finalAssets/Troops/Wizard.png', { frameWidth: 60, frameHeight: 90 });
+  this.load.spritesheet('Calvary', 'finalAssets/Troops/Calvary.png', { frameWidth: 176, frameHeight: 150 });
+
+  this.load.spritesheet('EnemyInfantry', 'finalAssets/Troops/EnemyInfantry.png', { frameWidth: 50, frameHeight: 100 });
+  this.load.spritesheet('EnemyArcher', 'finalAssets/Troops/EnemyArcher.png', { frameWidth: 50, frameHeight: 84 });
+  this.load.spritesheet('EnemyTank', 'finalAssets/Troops/EnemyTank.png', { frameWidth: 50, frameHeight: 100 });
+  this.load.spritesheet('EnemyWizard', 'finalAssets/Troops/EnemyWizard.png', { frameWidth: 60, frameHeight: 90 });
+  this.load.spritesheet('EnemyCalvary', 'finalAssets/Troops/EnemyCalvary.png', { frameWidth: 176, frameHeight: 150 });
+  
   this.load.image('textBackground', 'assets/Testing/Title/textBackground.png');
 
   this.load.audio('backgroundMusic', 'Audio/Music/LastManStanding.mp3');
@@ -35,6 +43,33 @@ function titlePreload() {
 }
 
 function titleCreate() {
+
+  let troopSheet = ['Infantry', 'Archer', 'Tank', 'Wizard', 'Calvary', 'EnemyInfantry', 'EnemyArcher', 'EnemyTank', 'EnemyWizard', 'EnemyCalvary'];
+
+  for (let count = 0; count < troopSheet.length; count++) {
+
+    this.anims.create({
+      key: troopSheet[count] + 'walk',
+      frames: this.anims.generateFrameNumbers(troopSheet[count], { start: 0, end: 4 }),
+      frameRate: 5,
+      repeat: -1
+    });
+
+    this.anims.create({
+      key: troopSheet[count] + 'attack',
+      frames: this.anims.generateFrameNumbers(troopSheet[count], { start: 5, end: 6 }),
+      frameRate: 2,
+      repeat: 1
+    });
+
+    this.anims.create({
+      key: troopSheet[count] + 'death',
+      frames: this.anims.generateFrameNumbers(troopSheet[count], { start: 7, end: 7 }),
+      frameRate: 1,
+      repeat: 2
+    });
+
+  }
 
   this.add.image(0, 500, 'map').setDepth(1);
   menuBackground = this.add.image(600, 450, 'textBackground').setDepth(3).setScrollFactor(0, 0).setDepth(0);

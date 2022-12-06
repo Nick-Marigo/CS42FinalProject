@@ -6,7 +6,8 @@ class HealthBar {
     this.x = x - 41;
     this.y = y - 75;
     this.value = health;
-    this.p = 76 / 100;
+    this.maxValue = health
+    this.p = 76 / this.maxValue;
 
     this.draw();
 
@@ -50,6 +51,11 @@ class HealthBar {
 
   deleteHealthBar() {
     this.bar.clear();
+  }
+
+  healthFollowTroop(troopX) {
+    this.x = troopX - 41;
+    this.draw();
   }
 
 }
