@@ -27,7 +27,7 @@ let config = {
   physics: {
     default: 'arcade',
     arcade: {
-      debug: true
+      debug: false
     }
   },
   fps: { forceSetTimeOut: true, target: 60 },
@@ -70,7 +70,7 @@ var enemyCastle;
 let enemyCastleHealth;
 
 let music;
-let selectSound, placeSound, healSound;
+let selectSound, placeSound, healSound, popOne, popTwo, popThree;
 
 let goldMinePlacement;
 
@@ -79,23 +79,24 @@ let goldMinePlacement;
 //********************************************************************************************************************
 
 function gamePreload() {
-  this.load.image('map', 'assets/Testing/testmap.png');
+  this.load.image('map', 'finalAssets/Map.png');
   this.load.image('castle', 'assets/Testing/testCastle.png');
   this.load.image('troopBoundry', 'assets/Testing/troopboundries.png');
+  this.load.image('buttonBackground', 'finalAssets/Buttons/ButtonBackGround.png');
 
-  this.load.image('button1', 'assets/Testing/testButtons/buttonInfantry.png');
-  this.load.image('button2', 'assets/Testing/testButtons/buttonArcher.png');
-  this.load.image('button3', 'assets/Testing/testButtons/buttonTank.png');
-  this.load.image('button4', 'assets/Testing/testButtons/buttonWizard.png');
-  this.load.image('button5', 'assets/Testing/testButtons/buttonCalvary.png');
+  this.load.image('button1', 'finalAssets/Buttons/buttonInfantry.png');
+  this.load.image('button2', 'finalAssets/Buttons/buttonArcher.png');
+  this.load.image('button3', 'finalAssets/Buttons/buttonTank.png');
+  this.load.image('button4', 'finalAssets/Buttons/buttonWizard.png');
+  this.load.image('button5', 'finalAssets/Buttons/buttonCalvary.png');
 
-  this.load.image('ButtonHeal', 'assets/Testing/testButtons/healSpellButton.png');
-  this.load.image('ButtonArrow', 'assets/Testing/testButtons/arrowSpellButton.png');
+  this.load.image('ButtonHeal', 'finalAssets/Buttons/healSpellButton.png');
+  this.load.image('ButtonArrow', 'finalAssets/Buttons/arrowSpellButton.png');
   this.load.image('arrowOutline', 'assets/Testing/Spelloutline/arrowSpellOutline.png');
-  this.load.image('ButtonFreeze', 'assets/Testing/testButtons/freezeSpellButton.png');
+  this.load.image('ButtonFreeze', 'finalAssets/Buttons/freezeSpellButton.png');
   this.load.image('freezeOutline', 'assets/Testing/Spelloutline/freezeSpellOutline.png');
 
-  this.load.image('buttonGoldMine', 'assets/Testing/testButtons/goldMineButton.png');
+  this.load.image('buttonGoldMine', 'finalAssets/Buttons/goldMineButton.png');
   this.load.image('goldMine', 'assets/Testing/testTroops/goldMine.png');
   this.load.image('goldMineOutline', 'assets/Testing/Spelloutline/goldMineOutline.png');
 
@@ -117,13 +118,16 @@ function gamePreload() {
   this.load.audio('PlaceSound', 'Audio/SoundEffects/Menu1B.wav');
   this.load.audio('HealSound', 'Audio/SoundEffects/heal.ogg');
   this.load.audio('ArrowSound', 'Audio/SoundEffects/ArchersShooting.ogg');
+  this.load.audio('PopOne', 'Audio/SoundEffects/pop1.ogg');
+  this.load.audio('PopTwo', 'Audio/SoundEffects/pop1.ogg');
+  this.load.audio('PopThree', 'Audio/SoundEffects/pop1.ogg');
 
 }
 
 function gameCreate() {
 
   updateCount = 1;
-  gold = 5000;
+  gold = 250;
 
   troopBarrierBottom = 700;
   troopBarrierTop = 200;
@@ -134,21 +138,25 @@ function gameCreate() {
   placeSound = this.sound.add('PlaceSound');
   selectSound = this.sound.add('SelectSound');
   healSound = this.sound.add('HealSound');
+  popOne = this.sound.add('PopOne');
+  popTwo = this.sound.add('PopTwo');
+  popThree = this.sound.add('PopThree');
 
-  this.add.image(3000, 500, 'map');
+  this.add.image(2000, 450, 'map');
+  this.add.image(600, 840, 'buttonBackground').setScrollFactor(0, 0);
 
-  playerCastle = new Castle(this, 75, 450, 75);
-  enemyCastle = new Castle(this, 3925, 450, -75);
+  playerCastle = new Castle(this, 75, 450, 75, 0, 0);
+  enemyCastle = new Castle(this, 3925, 450, -75, 750, 0);
 
-  playerCastleHealth = this.add.text(10, 16, 'Castle Health: ' + playerCastle.health, { fontFamily: 'Domine', fontSize: '40px', color: '#0000FF', stroke: '#000000', strokeThickness: 5 });
+  /*playerCastleHealth = this.add.text(10, 16, 'Castle Health: ' + playerCastle.health, { fontFamily: 'Domine', fontSize: '40px', color: '#0000FF', stroke: '#000000', strokeThickness: 5 });
   playerCastleHealth.setScrollFactor(0, 0);
 
   enemyCastleHealth = this.add.text(690, 16, 'Enemy Castle Health: ' + enemyCastle.health, { fontFamily: 'Domine', fontSize: '40px', color: '#FF0000', stroke: '#000000', strokeThickness: 5 });
-  enemyCastleHealth.setScrollFactor(0, 0);
+  enemyCastleHealth.setScrollFactor(0, 0);*/
 
   this.physics.world.setBounds(0, 0, 4000, 900);
 
-  goldCount = this.add.text(20, 830, 'Gold: ' + gold, { fontFamily: 'Domine', fontSize: '30px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 });
+  goldCount = this.add.text(20, 820, 'Gold: ' + gold, { fontFamily: 'Domine', fontSize: '30px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 });
   goldCount.setScrollFactor(0, 0);
 
   boundryBottom = this.add.image(3000, troopBarrierBottom, 'troopBoundry').setVisible(false);
@@ -196,23 +204,23 @@ function gameCreate() {
     }
   }
 
-  button1 = this.add.image(200, 850, 'button1').setInteractive().setScrollFactor(0, 0);
+  goldMineButton = this.add.image(275, 840, 'buttonGoldMine').setInteractive().setScrollFactor(0, 0).setScale(.15);
 
-  button2 = this.add.image(300, 850, 'button2').setInteractive().setScrollFactor(0, 0);
+  button1 = this.add.image(375, 840, 'button1').setInteractive().setScrollFactor(0, 0).setScale(.15);
 
-  button3 = this.add.image(400, 850, 'button3').setInteractive().setScrollFactor(0, 0);
+  button2 = this.add.image(475, 840, 'button2').setInteractive().setScrollFactor(0, 0).setScale(.15);
 
-  button4 = this.add.image(500, 850, 'button4').setInteractive().setScrollFactor(0, 0);
+  button3 = this.add.image(575, 840, 'button3').setInteractive().setScrollFactor(0, 0).setScale(.15);
 
-  button5 = this.add.image(600, 850, 'button5').setInteractive().setScrollFactor(0, 0);
+  button4 = this.add.image(675, 840, 'button4').setInteractive().setScrollFactor(0, 0).setScale(.15);
 
-  goldMineButton = this.add.image(1000, 850, 'buttonGoldMine').setInteractive().setScrollFactor(0, 0);
+  button5 = this.add.image(775, 840, 'button5').setInteractive().setScrollFactor(0, 0).setScale(.15);
 
-  healSpellButton = this.add.image(700, 850, 'ButtonHeal').setInteractive().setScrollFactor(0, 0);
+  healSpellButton = this.add.image(875, 840, 'ButtonHeal').setInteractive().setScrollFactor(0, 0).setScale(.15);
 
-  arrowSpellButton = this.add.image(800, 850, 'ButtonArrow').setInteractive().setScrollFactor(0, 0);
+  arrowSpellButton = this.add.image(975, 840, 'ButtonArrow').setInteractive().setScrollFactor(0, 0).setScale(.15);
 
-  freezeSpellButton = this.add.image(900, 850, 'ButtonFreeze').setInteractive().setScrollFactor(0, 0);
+  freezeSpellButton = this.add.image(1075, 840, 'ButtonFreeze').setInteractive().setScrollFactor(0, 0).setScale(.15);
 
 
   mycamera = this.cameras.main;
@@ -276,6 +284,27 @@ function gameUpdate() {
 
     gold += 30;
     goldCount.setText('Gold: ' + gold);
+
+  }
+
+  if(updateCount % 600 === 0) {
+    let temp = Phaser.Math.Between(1, 5);
+    if (temp === 1) {
+      enemyTroops.push(new EnemyInfantry(this, 4000, Phaser.Math.Between(200, 700)));
+    }
+    if (temp === 2) {
+      enemyTroops.push(new EnemyArcher(this, 4000, Phaser.Math.Between(200, 700)));
+    }
+    if (temp === 3) {
+      enemyTroops.push(new EnemyTank(this, 4000, Phaser.Math.Between(200, 700)));
+    }
+    if (temp === 4) {
+      enemyTroops.push(new EnemyWizard(this, 4000, Phaser.Math.Between(200, 700)));
+    }
+    if (temp === 5) {
+      enemyTroops.push(new EnemyCalvary(this, 4000, Phaser.Math.Between(200, 700)));
+    }
+      
     updateCount = 1;
   }
 
@@ -287,21 +316,21 @@ function gameUpdate() {
     mycamera.scrollX += 25;
   }
 
-  if (playerCastle.health <= 0) {
+  if (playerCastle.value <= 0) {
     WinOrLose = false;
     music.pause();
     this.scene.start('WinOrLoseScene');
   }
 
-  if (enemyCastle.health <= 0) {
+  if (enemyCastle.value <= 0) {
     WinOrLose = true;
     music.pause();
     this.scene.start('WinOrLoseScene');
   }
 
   goldCount.setText('Gold: ' + gold);
-  playerCastleHealth.setText('Castle Health: ' + playerCastle.health);
-  enemyCastleHealth.setText('Enemy Castle Health: ' + enemyCastle.health);
+  //playerCastleHealth.setText('Castle Health: ' + playerCastle.health);
+  //enemyCastleHealth.setText('Enemy Castle Health: ' + enemyCastle.health);
 
   if (canplace) {
     if (game.input.mousePointer.y > troopBarrierTop && game.input.mousePointer.y < troopBarrierBottom) {
@@ -548,6 +577,7 @@ function placeSpell(pointer) {
       if (boxL < spec.x && spec.x < boxR && boxT < spec.y && spec.y < boxB) {
         spec.arrowDrop();
       }
+      
     });
 
     enemyTroops.forEach((spec) => {

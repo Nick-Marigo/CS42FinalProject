@@ -22,7 +22,7 @@ let clicks = 0;
 
 function titlePreload() {
 
-  this.load.image('map', 'assets/Testing/testmap.png');
+  this.load.image('map', 'finalAssets/Map.png');
 
   this.load.spritesheet('Infantry', 'finalAssets/Troops/Infantry.png', { frameWidth: 50, frameHeight: 100 });
   this.load.spritesheet('Archer', 'finalAssets/Troops/Archer.png', { frameWidth: 50, frameHeight: 84 });
@@ -35,14 +35,21 @@ function titlePreload() {
   this.load.spritesheet('EnemyTank', 'finalAssets/Troops/EnemyTank.png', { frameWidth: 50, frameHeight: 100 });
   this.load.spritesheet('EnemyWizard', 'finalAssets/Troops/EnemyWizard.png', { frameWidth: 60, frameHeight: 90 });
   this.load.spritesheet('EnemyCalvary', 'finalAssets/Troops/EnemyCalvary.png', { frameWidth: 176, frameHeight: 150 });
-  
+
   this.load.image('textBackground', 'assets/Testing/Title/textBackground.png');
 
   this.load.audio('backgroundMusic', 'Audio/Music/LastManStanding.mp3');
+  this.load.audio('PopOne', 'Audio/SoundEffects/pop1.ogg');
+  this.load.audio('PopTwo', 'Audio/SoundEffects/pop1.ogg');
+  this.load.audio('PopThree', 'Audio/SoundEffects/pop1.ogg');
 
 }
 
 function titleCreate() {
+
+  popOne = this.sound.add('PopOne');
+  popTwo = this.sound.add('PopTwo');
+  popThree = this.sound.add('PopThree');
 
   let troopSheet = ['Infantry', 'Archer', 'Tank', 'Wizard', 'Calvary', 'EnemyInfantry', 'EnemyArcher', 'EnemyTank', 'EnemyWizard', 'EnemyCalvary'];
 
@@ -71,7 +78,7 @@ function titleCreate() {
 
   }
 
-  this.add.image(0, 500, 'map').setDepth(1);
+  this.add.image(0, 450, 'map').setDepth(1);
   menuBackground = this.add.image(600, 450, 'textBackground').setDepth(3).setScrollFactor(0, 0).setDepth(0);
 
   music = this.sound.add('backgroundMusic');
@@ -124,28 +131,28 @@ function titleUpdate() {
     let temp = Phaser.Math.Between(1, 5);
 
     if (temp === 1) {
-      titletroops.push(new Infantry(this, -325, Phaser.Math.Between(25, 875)));
-      titlenemies.push(new EnemyInfantry(this, 1525, Phaser.Math.Between(25, 875)));
+      titletroops.push(new Infantry(this, -325, Phaser.Math.Between(200, 700)));
+      titlenemies.push(new EnemyInfantry(this, 1525, Phaser.Math.Between(200, 700)));
     }
 
     if (temp === 2) {
-      titletroops.push(new Archer(this, -325, Phaser.Math.Between(25, 875)));
-      titlenemies.push(new EnemyArcher(this, 1525, Phaser.Math.Between(25, 875)));
+      titletroops.push(new Archer(this, -325, Phaser.Math.Between(200, 700)));
+      titlenemies.push(new EnemyArcher(this, 1525, Phaser.Math.Between(200, 700)));
     }
 
     if (temp === 3) {
-      titletroops.push(new Tank(this, -325, Phaser.Math.Between(25, 875)));
-      titlenemies.push(new EnemyTank(this, 1525, Phaser.Math.Between(25, 875)));
+      titletroops.push(new Tank(this, -325, Phaser.Math.Between(200, 700)));
+      titlenemies.push(new EnemyTank(this, 1525, Phaser.Math.Between(200, 700)));
     }
 
     if (temp === 4) {
-      titletroops.push(new Wizard(this, -325, Phaser.Math.Between(25, 875)));
-      titlenemies.push(new EnemyWizard(this, 1525, Phaser.Math.Between(25, 875)));
+      titletroops.push(new Wizard(this, -325, Phaser.Math.Between(200, 700)));
+      titlenemies.push(new EnemyWizard(this, 1525, Phaser.Math.Between(200, 700)));
     }
 
     if (temp === 5) {
-      titletroops.push(new Calvary(this, -325, Phaser.Math.Between(25, 875)));
-      titlenemies.push(new EnemyCalvary(this, 1525, Phaser.Math.Between(25, 875)));
+      titletroops.push(new Calvary(this, -325, Phaser.Math.Between(200, 700)));
+      titlenemies.push(new EnemyCalvary(this, 1525, Phaser.Math.Between(200, 700)));
     }
 
     updateCount = 1;

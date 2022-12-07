@@ -1,7 +1,7 @@
 class Troop extends Phaser.Physics.Arcade.Sprite {
-  constructor(scene, x, y, trooptype, frame, dx, dy, healthValue, damageValue, cost, range, speed) {
+  constructor(scene, x, y, trooptype, frame, dx, dy, healthValue, damageValue, cost, range, speed, healthBarDif) {
     //scene, pos x, pos y, string(texture), frame(null), Health, damage, cost, range, speed
-    super(scene, x, y, trooptype, healthValue, damageValue, cost, speed);
+    super(scene, x, y, trooptype, healthValue, damageValue, cost, speed, healthBarDif);
 
     this.trooptype = trooptype;
     this.healthValue = healthValue;
@@ -12,6 +12,7 @@ class Troop extends Phaser.Physics.Arcade.Sprite {
     this.dx = dx;
     this.dy = dy;
     this.freeze = false;
+    this.healthBarDif = healthBarDif;
 
     this.setTexture(this.trooptype);
     this.setScale(1.2);
@@ -19,7 +20,7 @@ class Troop extends Phaser.Physics.Arcade.Sprite {
     this.setDepth(2);
 
     this.play(this.trooptype + 'walk');
-    
+
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
@@ -27,7 +28,7 @@ class Troop extends Phaser.Physics.Arcade.Sprite {
 
     this.alive = true;
 
-    this.hp = new HealthBar(scene, x, y, healthValue);
+    this.hp = new HealthBar(scene, x, (y - healthBarDif), healthValue);
 
     this.maxCoolDown = 120;
     this.coolDown = 0;
@@ -103,6 +104,20 @@ class Troop extends Phaser.Physics.Arcade.Sprite {
 
       this.play(this.trooptype + 'death');
 
+      let sound = Phaser.Math.Between(1, 3);
+  
+      if(sound === 1) {
+        popOne.play();
+      }
+
+      if(sound === 2) {
+        popTwo.play();
+      }
+
+      if(sound === 3) {
+        popThree.play();
+      }
+      
       setTimeout(() => {
         this.setVisible(false);
       }, 500);
@@ -181,62 +196,62 @@ class Troop extends Phaser.Physics.Arcade.Sprite {
 
 class Infantry extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'Infantry', null, 25, 40, 100, 30, 50, 10, 35);
+    super(scene, x, y, 'Infantry', null, 25, 40, 100, 30, 50, 10, 35, 75);
     //scene, pos x, pos y, string(texture), frame(null), 
-    //Different X, difference y, Health, damage, cost, range, speed
+    //Different X, difference y, Health, damage, cost, range, speed, healthBarDifference
   }
 }
 
 class Archer extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'Archer', null, 25, 40, 75, 40, 50, 150, 40);
+    super(scene, x, y, 'Archer', null, 25, 40, 75, 40, 50, 150, 40, 75);
   }
 }
 
 class Tank extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'Tank', null, 25, 40, 250, 10, 75, 25, 30);
+    super(scene, x, y, 'Tank', null, 25, 40, 250, 10, 75, 25, 30, 75);
   }
 }
 
 class Wizard extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'Wizard', null, 25, 40, 50, 60, 75, 100, 30);
+    super(scene, x, y, 'Wizard', null, 25, 40, 50, 60, 75, 100, 30, 75);
   }
 }
 
 class Calvary extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'Calvary', null, 75, 60, 150, 65, 200, 25, 45);
+    super(scene, x, y, 'Calvary', null, 75, 60, 150, 65, 200, 25, 45, 110);
   }
 }
 
 class EnemyInfantry extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'EnemyInfantry', null, 25, 40, 100, 30, 50, 10, -30);
+    super(scene, x, y, 'EnemyInfantry', null, 25, 40, 100, 30, 50, 10, -30, 75);
   }
 }
 
 class EnemyArcher extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'EnemyArcher', null, 25, 40, 75, 40, 50, 150, -40);
+    super(scene, x, y, 'EnemyArcher', null, 25, 40, 75, 40, 50, 150, -40, 75);
   }
 }
 
 class EnemyTank extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'EnemyTank', null, 25, 40, 250, 10, 75, 25, -30);
+    super(scene, x, y, 'EnemyTank', null, 25, 40, 250, 10, 75, 25, -30, 75);
   }
 }
 
 class EnemyWizard extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'EnemyWizard', null, 25, 40, 50, 60, 75, 100, -30);
+    super(scene, x, y, 'EnemyWizard', null, 25, 40, 50, 60, 75, 100, -30, 75);
   }
 }
 
 class EnemyCalvary extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'EnemyCalvary', null, 75, 60, 150, 65, 200, 25, -45);
+    super(scene, x, y, 'EnemyCalvary', null, 75, 60, 150, 65, 200, 25, -45, 110);
   }
 }

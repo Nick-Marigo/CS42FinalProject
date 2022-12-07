@@ -40,7 +40,10 @@ function tutorialCreate() {
   gold = 250;
   updateCount = 1;
 
-  this.add.image(3000, 500, 'map');
+  troopBarrierBottom = 700;
+  troopBarrierTop = 200;
+
+  this.add.image(2000, 450, 'map');
 
   blackscreen = this.add.image(3000, 450, 'black').setDepth(10);
   blackscreen.alpha = 0.65;
@@ -96,7 +99,7 @@ function tutorialCreate() {
 
   mycamera = this.cameras.main;
   cursors = this.input.keyboard.createCursorKeys();
-  this.cameras.main.setBounds(0, 0, 6000, 1000);
+  this.cameras.main.setBounds(0, 0, 4000, 900);
 
   let continueText = this.add.text(600, 730, 'Click here to continue', { fontFamily: 'Domine', fontSize: '30px', color: '#05F3FC', stroke: '#000000', strokeThickness: 5 })
   continueText.setScrollFactor(0, 0).setOrigin(0.5).setDepth(11).setInteractive();

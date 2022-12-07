@@ -4,7 +4,7 @@ class HealthBar {
     this.bar = new Phaser.GameObjects.Graphics(scene);
 
     this.x = x - 41;
-    this.y = y - 75;
+    this.y = y;
     this.value = health;
     this.maxValue = health
     this.p = 76 / this.maxValue;
