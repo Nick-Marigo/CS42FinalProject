@@ -11,7 +11,7 @@ class GoldMine extends Phaser.Physics.Arcade.Sprite {
     this.setTexture('goldMine');
     this.setPosition(x, y);
     this.setDepth(3);
-
+    
     scene.add.existing(this);
   }
 

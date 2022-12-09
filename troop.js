@@ -1,6 +1,6 @@
 class Troop extends Phaser.Physics.Arcade.Sprite {
-  constructor(scene, x, y, trooptype, frame, dx, dy, healthValue, damageValue, cost, range, speed, healthBarDif) {
-    //scene, pos x, pos y, string(texture), frame(null), Health, damage, cost, range, speed
+  constructor(scene, x, y, trooptype, frame, dx, dy, healthValue, damageValue, cost, range, speed, healthBarDif, isEnemy) {
+    //scene, pos x, pos y, string(texture), frame(null), Health, damage, cost, range, speed, healthbardifference, isEnemy
     super(scene, x, y, trooptype, healthValue, damageValue, cost, speed, healthBarDif);
 
     this.trooptype = trooptype;
@@ -13,6 +13,7 @@ class Troop extends Phaser.Physics.Arcade.Sprite {
     this.dy = dy;
     this.freeze = false;
     this.healthBarDif = healthBarDif;
+    this.isEnemy = isEnemy;
 
     this.setTexture(this.trooptype);
     this.setScale(1.2);
@@ -29,6 +30,7 @@ class Troop extends Phaser.Physics.Arcade.Sprite {
     this.alive = true;
 
     this.hp = new HealthBar(scene, x, (y - healthBarDif), healthValue);
+    this.placeOnMiniMap = new miniMapTroops(scene, x, y, isEnemy);
 
     this.maxCoolDown = 120;
     this.coolDown = 0;
@@ -103,21 +105,22 @@ class Troop extends Phaser.Physics.Arcade.Sprite {
       this.alive = false;
 
       this.play(this.trooptype + 'death');
+      this.placeOnMiniMap.deleteTroop();
 
       let sound = Phaser.Math.Between(1, 3);
-  
-      if(sound === 1) {
+
+      if (sound === 1) {
         popOne.play();
       }
 
-      if(sound === 2) {
+      if (sound === 2) {
         popTwo.play();
       }
 
-      if(sound === 3) {
+      if (sound === 3) {
         popThree.play();
       }
-      
+
       setTimeout(() => {
         this.setVisible(false);
       }, 500);
@@ -166,15 +169,15 @@ class Troop extends Phaser.Physics.Arcade.Sprite {
   }
 
   freezeTroop() {
-    //console.log('Calling freezeTroop');
+    
     if (this.freezeCoolDown === 0) {
-      //console.log('if true');
       this.setVelocityX(this.speed);
+      this.clearTint();
       this.freeze = false;
       this.freezeCoolDown = this.freezeMaxCoolDown;
     } else {
-      //console.log('else');
       this.setVelocityX(0);
+      this.setTint(0x057FFC);
     }
 
     if (this.freezeCoolDown > 0) {
@@ -190,68 +193,69 @@ class Troop extends Phaser.Physics.Arcade.Sprite {
 
   followTroop() {
     this.hp.healthFollowTroop(this.x);
+    this.placeOnMiniMap.updateTroop(this.x, this.isEnemy);
   }
 
 }
 
 class Infantry extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'Infantry', null, 25, 40, 100, 30, 50, 10, 35, 75);
+    super(scene, x, y, 'Infantry', null, 25, 40, 100, 30, 50, 10, 35, 75, false);
     //scene, pos x, pos y, string(texture), frame(null), 
-    //Different X, difference y, Health, damage, cost, range, speed, healthBarDifference
+    //Different X, difference y, Health, damage, cost, range, speed, healthBarDifference, isEnemy
   }
 }
 
 class Archer extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'Archer', null, 25, 40, 75, 40, 50, 150, 40, 75);
+    super(scene, x, y, 'Archer', null, 25, 40, 75, 40, 50, 150, 40, 75, false);
   }
 }
 
 class Tank extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'Tank', null, 25, 40, 250, 10, 75, 25, 30, 75);
+    super(scene, x, y, 'Tank', null, 25, 40, 250, 10, 75, 25, 30, 75, false);
   }
 }
 
 class Wizard extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'Wizard', null, 25, 40, 50, 60, 75, 100, 30, 75);
+    super(scene, x, y, 'Wizard', null, 25, 40, 50, 60, 75, 100, 30, 75, false);
   }
 }
 
 class Calvary extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'Calvary', null, 75, 60, 150, 65, 200, 25, 45, 110);
+    super(scene, x, y, 'Calvary', null, 75, 60, 150, 65, 200, 25, 45, 110, false);
   }
 }
 
 class EnemyInfantry extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'EnemyInfantry', null, 25, 40, 100, 30, 50, 10, -30, 75);
+    super(scene, x, y, 'EnemyInfantry', null, 25, 40, 100, 30, 50, 10, -30, 75, true);
   }
 }
 
 class EnemyArcher extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'EnemyArcher', null, 25, 40, 75, 40, 50, 150, -40, 75);
+    super(scene, x, y, 'EnemyArcher', null, 25, 40, 75, 40, 50, 150, -40, 75, true);
   }
 }
 
 class EnemyTank extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'EnemyTank', null, 25, 40, 250, 10, 75, 25, -30, 75);
+    super(scene, x, y, 'EnemyTank', null, 25, 40, 250, 10, 75, 25, -30, 75, true);
   }
 }
 
 class EnemyWizard extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'EnemyWizard', null, 25, 40, 50, 60, 75, 100, -30, 75);
+    super(scene, x, y, 'EnemyWizard', null, 25, 40, 50, 60, 75, 100, -30, 75, true);
   }
 }
 
 class EnemyCalvary extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'EnemyCalvary', null, 75, 60, 150, 65, 200, 25, -45, 110);
+    super(scene, x, y, 'EnemyCalvary', null, 75, 60, 150, 65, 200, 25, -45, 110, true);
   }
 }

@@ -1,4 +1,4 @@
-/*  Students: Please use this week's project for Week 16: Assignment 19: Beta. 
+/*  Students: Please use this week's project for Week 17: Assignment 20: Final Build + Documentation. 
      You will need to replace the contents of this JavaScript file with your own work, 
      and create any other files, if any, required for the assignment.
      When you are done, be certain to submit the assignment in Canvas to be graded. */
@@ -74,6 +74,8 @@ let selectSound, placeSound, healSound, popOne, popTwo, popThree;
 
 let goldMinePlacement;
 
+let miniMap;
+
 //********************************************************************************************************************
 //GAMEPLAY SCENE
 //********************************************************************************************************************
@@ -81,7 +83,7 @@ let goldMinePlacement;
 function gamePreload() {
   this.load.image('map', 'finalAssets/Map.png');
   this.load.image('castle', 'assets/Testing/testCastle.png');
-  this.load.image('troopBoundry', 'assets/Testing/troopboundries.png');
+  this.load.image('troopBoundry', 'finalAssets/troopboundries.png');
   this.load.image('buttonBackground', 'finalAssets/Buttons/ButtonBackGround.png');
 
   this.load.image('button1', 'finalAssets/Buttons/buttonInfantry.png');
@@ -127,7 +129,7 @@ function gamePreload() {
 function gameCreate() {
 
   updateCount = 1;
-  gold = 250;
+  gold = 5000;
 
   troopBarrierBottom = 700;
   troopBarrierTop = 200;
@@ -146,7 +148,9 @@ function gameCreate() {
   this.add.image(600, 840, 'buttonBackground').setScrollFactor(0, 0);
 
   playerCastle = new Castle(this, 75, 450, 75, 0, 0);
-  enemyCastle = new Castle(this, 3925, 450, -75, 750, 0);
+  enemyCastle = new Castle(this, 3925, 450, -75, 800, 0);
+
+  miniMap = new MiniMap(this, 400, 0);
 
   /*playerCastleHealth = this.add.text(10, 16, 'Castle Health: ' + playerCastle.health, { fontFamily: 'Domine', fontSize: '40px', color: '#0000FF', stroke: '#000000', strokeThickness: 5 });
   playerCastleHealth.setScrollFactor(0, 0);
@@ -287,7 +291,7 @@ function gameUpdate() {
 
   }
 
-  if(updateCount % 600 === 0) {
+  if (updateCount % 600 === 0) {
     let temp = Phaser.Math.Between(1, 5);
     if (temp === 1) {
       enemyTroops.push(new EnemyInfantry(this, 4000, Phaser.Math.Between(200, 700)));
@@ -304,7 +308,7 @@ function gameUpdate() {
     if (temp === 5) {
       enemyTroops.push(new EnemyCalvary(this, 4000, Phaser.Math.Between(200, 700)));
     }
-      
+
     updateCount = 1;
   }
 
@@ -577,7 +581,7 @@ function placeSpell(pointer) {
       if (boxL < spec.x && spec.x < boxR && boxT < spec.y && spec.y < boxB) {
         spec.arrowDrop();
       }
-      
+
     });
 
     enemyTroops.forEach((spec) => {

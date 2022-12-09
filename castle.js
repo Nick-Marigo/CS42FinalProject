@@ -7,7 +7,7 @@ class Castle extends Phaser.Physics.Arcade.Sprite {
     this.dx = dx;
     this.healthBarX = healthBarX;
     this.healthBarY = healthBarY;
-    this.p = 440 / 500;
+    this.p = 390 / 500;
 
     this.setTexture('castle');
     this.setPosition(x, y);
@@ -31,7 +31,7 @@ class Castle extends Phaser.Physics.Arcade.Sprite {
 
     return (this.value === 0);
   }
-  
+
   damage(amount) {
     let newAmount = amount / 10;
     this.decrease(newAmount);
@@ -52,10 +52,10 @@ class Castle extends Phaser.Physics.Arcade.Sprite {
     this.bar.clear();
 
     this.bar.fillStyle(0x000000);
-    this.bar.fillRect(this.healthBarX, this.healthBarY, 450, 40);
+    this.bar.fillRect(this.healthBarX, this.healthBarY, 400, 40);
 
     this.bar.fillStyle(0xffffff);
-    this.bar.fillRect(this.healthBarX + 5, this.healthBarY + 5, 440, 30);
+    this.bar.fillRect(this.healthBarX + 5, this.healthBarY + 5, 390, 30);
 
     if (this.value < 120) {
       this.bar.fillStyle(0xff0000);
@@ -67,6 +67,7 @@ class Castle extends Phaser.Physics.Arcade.Sprite {
     var d = Math.floor(this.p * this.value);
 
     this.bar.fillRect(this.healthBarX + 5, this.healthBarY + 5, d, 30);
+  
   }
 
 }
