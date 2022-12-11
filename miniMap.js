@@ -1,6 +1,5 @@
 class MiniMap {
   constructor(scene, x, y) {
-    //super(scene, x, y)
 
     this.map = new Phaser.GameObjects.Graphics(scene);
 
@@ -16,8 +15,6 @@ class MiniMap {
 
   draw() {
     this.map.clear();
-
-  //var boarder = this.add.rectangle(this.x, this.y, 400, 100, 0x000000);
     
     this.map.fillStyle(0x000000);
     let test = this.map.fillRect(this.x, this.y, 400, 100);

@@ -1,7 +1,7 @@
 class Troop extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y, trooptype, frame, dx, dy, healthValue, damageValue, cost, range, speed, healthBarDif, isEnemy) {
     //scene, pos x, pos y, string(texture), frame(null), Health, damage, cost, range, speed, healthbardifference, isEnemy
-    super(scene, x, y, trooptype, healthValue, damageValue, cost, speed, healthBarDif);
+    super(scene, x, y, trooptype, frame, healthValue, damageValue, cost, speed, healthBarDif);
 
     this.trooptype = trooptype;
     this.healthValue = healthValue;
@@ -135,24 +135,33 @@ class Troop extends Phaser.Physics.Arcade.Sprite {
     var target = (enemy);
 
     if (target && this.alive && this.coolDown === 0) {
-      //this.play(this.color + 'Attack');
 
       this.play(this.trooptype + 'attack');
 
-      //var offset = (this.color === 'blue') ? 20 : -20;
-      //var targetX = (this.color === 'blue') ? target.x + 30 : target.x - 30;
+      if (this.range > 90) {
 
-      //this.missile.setPosition(this.x + offset, this.y + 20).setVisible(true);
+        var offset = (!this.isEnemy) ? 20 : -20;
+        var targetX = (!this.isEnemy) ? target.x : target.x;
 
-      /*this.scene.tweens.add({
-        targets: this.missile,
-        x: targetX,
-        ease: 'Linear',
-        duration: 500,
-        onComplete: function(tween, targets) {
-          targets[0].setVisible(false);
+        
+        console.log(this.trooptype);
+        if (this.trooptype == 'Archer' || this.Trooptype == 'EnemyArcher') {
+          this.projectile.setPosition(this.x + offset, this.y - 15).setVisible(true);
+        } else {
+          this.projectile.setPosition(this.x + offset, this.y + 20).setVisible(true);
         }
-      });*/
+
+        this.scene.tweens.add({
+          targets: this.projectile,
+          x: targetX,
+          ease: 'Linear',
+          duration: 500,
+          onComplete: function(tween, targets) {
+            targets[0].setVisible(false);
+          }
+        });
+
+      }
 
       target.healthValue -= this.damageValue;
       target.damage(this.damageValue);
@@ -169,7 +178,7 @@ class Troop extends Phaser.Physics.Arcade.Sprite {
   }
 
   freezeTroop() {
-    
+
     if (this.freezeCoolDown === 0) {
       this.setVelocityX(this.speed);
       this.clearTint();
@@ -200,62 +209,81 @@ class Troop extends Phaser.Physics.Arcade.Sprite {
 
 class Infantry extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'Infantry', null, 25, 40, 100, 30, 50, 10, 35, 75, false);
-    //scene, pos x, pos y, string(texture), frame(null), 
+    super(scene, x, y, 'Infantry', null, 25, 50, 100, 30, 50, 10, 35, 75, false);
+    //scene, pos x, pos y, string(texture), frame(null),
     //Different X, difference y, Health, damage, cost, range, speed, healthBarDifference, isEnemy
   }
 }
 
 class Archer extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'Archer', null, 25, 40, 75, 40, 50, 150, 40, 75, false);
+    super(scene, x, y, 'Archer', null, 25, 42, 75, 40, 50, 150, 40, 75, false);
+    this.projectile = new Projectile(scene, 'ArcherProjectile');
+    scene.add.existing(this.projectile);
   }
 }
 
 class Tank extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'Tank', null, 25, 40, 250, 10, 75, 25, 30, 75, false);
+    super(scene, x, y, 'Tank', null, 25, 50, 250, 10, 75, 25, 30, 75, false);
   }
 }
 
 class Wizard extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'Wizard', null, 25, 40, 50, 60, 75, 100, 30, 75, false);
+    super(scene, x, y, 'Wizard', null, 25, 45, 50, 60, 75, 100, 30, 75, false);
+    this.projectile = new Projectile(scene, 'WizardProjectile');
+    scene.add.existing(this.projectile);
   }
 }
 
 class Calvary extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'Calvary', null, 75, 60, 150, 65, 200, 25, 45, 110, false);
+    super(scene, x, y, 'Calvary', null, 75, 75, 150, 65, 200, 25, 45, 110, false);
   }
 }
 
 class EnemyInfantry extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'EnemyInfantry', null, 25, 40, 100, 30, 50, 10, -30, 75, true);
+    super(scene, x, y, 'EnemyInfantry', null, 25, 50, 100, 30, 50, 10, -30, 75, true);
   }
 }
 
 class EnemyArcher extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'EnemyArcher', null, 25, 40, 75, 40, 50, 150, -40, 75, true);
+    super(scene, x, y, 'EnemyArcher', null, 25, 42, 75, 40, 50, 150, -40, 75, true);
+    this.projectile = new Projectile(scene, 'ArcherProjectile');
+    scene.add.existing(this.projectile);
   }
 }
 
 class EnemyTank extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'EnemyTank', null, 25, 40, 250, 10, 75, 25, -30, 75, true);
+    super(scene, x, y, 'EnemyTank', null, 25, 50, 250, 10, 75, 25, -30, 75, true);
   }
 }
 
 class EnemyWizard extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'EnemyWizard', null, 25, 40, 50, 60, 75, 100, -30, 75, true);
+    super(scene, x, y, 'EnemyWizard', null, 25, 45, 50, 60, 75, 100, -30, 75, true);
+    this.projectile = new Projectile(scene, 'WizardProjectile');
+    scene.add.existing(this.projectile);
   }
 }
 
 class EnemyCalvary extends Troop {
   constructor(scene, x, y) {
-    super(scene, x, y, 'EnemyCalvary', null, 75, 60, 150, 65, 200, 25, -45, 110, true);
+    super(scene, x, y, 'EnemyCalvary', null, 75, 75, 150, 65, 200, 25, -45, 110, true);
+  }
+}
+
+
+
+
+
+class Projectile extends Phaser.GameObjects.Sprite {
+  constructor(scene, frame) {
+    super(scene, 0, 0, frame);
+    this.visible = false;
   }
 }
