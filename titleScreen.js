@@ -26,8 +26,10 @@ function titlePreload() {
 
   this.load.spritesheet('Infantry', 'finalAssets/Troops/Infantry.png', { frameWidth: 50, frameHeight: 100 });
   this.load.spritesheet('Archer', 'finalAssets/Troops/Archer.png', { frameWidth: 50, frameHeight: 84 });
+  this.load.image('ArcherProjectile', 'finalAssets/Troops/ArcherProjectile.png');
   this.load.spritesheet('Tank', 'finalAssets/Troops/Tank.png', { frameWidth: 50, frameHeight: 100 });
   this.load.spritesheet('Wizard', 'finalAssets/Troops/Wizard.png', { frameWidth: 60, frameHeight: 90 });
+  this.load.image('WizardProjectile', 'finalAssets/Troops/WizardProjectile.png');
   this.load.spritesheet('Calvary', 'finalAssets/Troops/Calvary.png', { frameWidth: 176, frameHeight: 150 });
 
   this.load.spritesheet('EnemyInfantry', 'finalAssets/Troops/EnemyInfantry.png', { frameWidth: 50, frameHeight: 100 });
@@ -42,6 +44,7 @@ function titlePreload() {
   this.load.audio('PopOne', 'Audio/SoundEffects/pop1.ogg');
   this.load.audio('PopTwo', 'Audio/SoundEffects/pop1.ogg');
   this.load.audio('PopThree', 'Audio/SoundEffects/pop1.ogg');
+  this.load.audio('meleeAttack', 'Audio/SoundEffects/swordsound.wav');
 
 }
 
@@ -50,6 +53,7 @@ function titleCreate() {
   popOne = this.sound.add('PopOne');
   popTwo = this.sound.add('PopTwo');
   popThree = this.sound.add('PopThree');
+  meleeAttack = this.sound.add('meleeAttack');
 
   let troopSheet = ['Infantry', 'Archer', 'Tank', 'Wizard', 'Calvary', 'EnemyInfantry', 'EnemyArcher', 'EnemyTank', 'EnemyWizard', 'EnemyCalvary'];
 
@@ -65,7 +69,7 @@ function titleCreate() {
     this.anims.create({
       key: troopSheet[count] + 'attack',
       frames: this.anims.generateFrameNumbers(troopSheet[count], { start: 5, end: 6 }),
-      frameRate: 2,
+      frameRate: 1,
       repeat: 1
     });
 

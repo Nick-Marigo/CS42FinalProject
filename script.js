@@ -39,7 +39,8 @@ let game = new Phaser.Game(config);
 
 let cursors;
 let mycamera;
-var button1, button2, button3, button4, button5;
+var button1, button2, button3, button4, button5, cancelButton;
+let cancelText;
 var arrowSpellButton, freezeSpellButton, healSpellButton, goldMineButton;
 let goldCount;
 let gold = 250;
@@ -57,6 +58,7 @@ const troopbuttons = [1, 2, 3, 4, 5];
 let currentTroop = -1;
 const spells = ['None', 'Arrow', 'Freeze'];
 let currentSpell = spells[0];
+let arrowsFalling;
 let updateCount = 1;
 let WinOrLose = false; //True equals win. False equals lose
 let outlines = [];
@@ -72,7 +74,7 @@ var enemyCastle;
 let enemyCastleHealth;
 
 let music;
-let selectSound, placeSound, healSound, popOne, popTwo, popThree;
+let selectSound, placeSound, healSound, popOne, popTwo, popThree, meleeAttack;
 
 let goldMinePlacement;
 
@@ -84,25 +86,27 @@ let miniMap;
 
 function gamePreload() {
   this.load.image('map', 'finalAssets/Map.png');
-  this.load.image('castle', 'assets/Testing/testCastle.png');
+  this.load.image('castle', 'finalAssets/Castle.png');
+  this.load.image('castleShadow', 'finalAssets/CastleShadow.png');
   this.load.image('troopBoundry', 'finalAssets/troopboundries.png');
   this.load.image('buttonBackground', 'finalAssets/Buttons/ButtonBackGround.png');
 
+  this.load.image('buttonGoldMine', 'finalAssets/Buttons/goldMineButton.png');
   this.load.image('button1', 'finalAssets/Buttons/buttonInfantry.png');
   this.load.image('button2', 'finalAssets/Buttons/buttonArcher.png');
   this.load.image('button3', 'finalAssets/Buttons/buttonTank.png');
   this.load.image('button4', 'finalAssets/Buttons/buttonWizard.png');
   this.load.image('button5', 'finalAssets/Buttons/buttonCalvary.png');
-
   this.load.image('ButtonHeal', 'finalAssets/Buttons/healSpellButton.png');
   this.load.image('ButtonArrow', 'finalAssets/Buttons/arrowSpellButton.png');
-  this.load.image('arrowOutline', 'assets/Testing/Spelloutline/arrowSpellOutline.png');
   this.load.image('ButtonFreeze', 'finalAssets/Buttons/freezeSpellButton.png');
-  this.load.image('freezeOutline', 'assets/Testing/Spelloutline/freezeSpellOutline.png');
+  this.load.image('cancelButton', 'finalAssets/Buttons/CancelButton.png');
 
-  this.load.image('buttonGoldMine', 'finalAssets/Buttons/goldMineButton.png');
-  this.load.image('goldMine', 'assets/Testing/testTroops/goldMine.png');
-  this.load.image('goldMineOutline', 'assets/Testing/Spelloutline/goldMineOutline.png');
+  this.load.image('arrowOutline', 'finalAssets/OutlinePlacements/arrowSpellOutline.png');
+  this.load.image('arrowsFalling', 'finalAssets/ArrowsFalling.png');
+  this.load.image('freezeOutline', 'finalAssets/OutlinePlacements/freezeSpellOutline.png');
+  this.load.image('goldMineOutline', 'finalAssets/OutlinePlacements/goldMineOutline.png');
+  this.load.spritesheet('goldMine', 'finalAssets/GoldMine.png', { frameWidth: 75, frameHeight: 75 });
 
   this.load.spritesheet('Infantry', 'finalAssets/Troops/Infantry.png', { frameWidth: 50, frameHeight: 100 });
   this.load.spritesheet('Archer', 'finalAssets/Troops/Archer.png', { frameWidth: 50, frameHeight: 84 });
@@ -124,6 +128,7 @@ function gamePreload() {
   this.load.audio('PlaceSound', 'Audio/SoundEffects/Menu1B.wav');
   this.load.audio('HealSound', 'Audio/SoundEffects/heal.ogg');
   this.load.audio('ArrowSound', 'Audio/SoundEffects/ArchersShooting.ogg');
+  this.load.audio('meleeAttack', 'Audio/SoundEffects/swordsound.wav');
   this.load.audio('PopOne', 'Audio/SoundEffects/pop1.ogg');
   this.load.audio('PopTwo', 'Audio/SoundEffects/pop1.ogg');
   this.load.audio('PopThree', 'Audio/SoundEffects/pop1.ogg');
@@ -147,27 +152,33 @@ function gameCreate() {
   popOne = this.sound.add('PopOne');
   popTwo = this.sound.add('PopTwo');
   popThree = this.sound.add('PopThree');
+  meleeAttack = this.sound.add('meleeAttack');
 
   this.add.image(2000, 450, 'map');
   this.add.image(600, 840, 'buttonBackground').setScrollFactor(0, 0);
 
-  playerCastle = new Castle(this, 75, 450, 75, 0, 0, false);
-  enemyCastle = new Castle(this, 3925, 450, -75, 800, 0, true);
+  playerCastle = new Castle(this, 100, 400, 75, 0, 0, false);
+  this.add.image(100, 400, 'castleShadow').alpha = .5;
+  enemyCastle = new Castle(this, 3900, 400, -75, 800, 0, true);
+  this.add.image(3900, 400, 'castleShadow').setFlipX(true).alpha = .5;
 
   miniMap = new MiniMap(this, 400, 0);
 
+  this.anims.create({
+    key: 'GoldMineAnims',
+    frames: this.anims.generateFrameNumbers('goldMine', { start: 0, end: 2 }),
+    frameRate: 8,
+    repeat: -1
+  });
 
-  //enemyTroops.push(new EnemyTank(this, 1000, 400));
-  //enemyTroops.push(new EnemyTank(this, 1000, 600));
-
+  GoldMines.push(new GoldMine(this, 437, 637, 15));
+  GoldMines.push(new GoldMine(this, 637, 337, 30));
+  GoldMines.push(new GoldMine(this, 837, 450, 45));
 
   this.physics.world.setBounds(0, 0, 4000, 900);
 
   goldCount = this.add.text(20, 820, 'Gold: ' + gold, { fontFamily: 'Domine', fontSize: '30px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 });
   goldCount.setScrollFactor(0, 0);
-  GoldMines.push(new GoldMine(this, 437, 637, 15));
-  GoldMines.push(new GoldMine(this, 637, 337, 30));
-  GoldMines.push(new GoldMine(this, 837, 450, 45));
 
   boundryBottom = this.add.image(3000, troopBarrierBottom, 'troopBoundry').setVisible(false);
   boundryTop = this.add.image(3000, troopBarrierTop, 'troopBoundry').setVisible(false);
@@ -209,22 +220,34 @@ function gameCreate() {
   }
 
   goldMineButton = this.add.image(275, 840, 'buttonGoldMine').setInteractive().setScrollFactor(0, 0).setScale(.15);
+  this.add.text(258, 870, 250, { fontFamily: 'Domine', fontSize: '16px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 }).setScrollFactor(0, 0);
 
-  button1 = this.add.image(375, 840, 'button1').setInteractive().setScrollFactor(0, 0).setScale(.15);
+  button1 = this.add.image(365, 840, 'button1').setInteractive().setScrollFactor(0, 0).setScale(.15);
+  this.add.text(353, 870, 50, { fontFamily: 'Domine', fontSize: '16px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 }).setScrollFactor(0, 0);
 
-  button2 = this.add.image(475, 840, 'button2').setInteractive().setScrollFactor(0, 0).setScale(.15);
+  button2 = this.add.image(465, 840, 'button2').setInteractive().setScrollFactor(0, 0).setScale(.15);
+  this.add.text(453, 870, 50, { fontFamily: 'Domine', fontSize: '16px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 }).setScrollFactor(0, 0);
 
-  button3 = this.add.image(575, 840, 'button3').setInteractive().setScrollFactor(0, 0).setScale(.15);
+  button3 = this.add.image(565, 840, 'button3').setInteractive().setScrollFactor(0, 0).setScale(.15);
+  this.add.text(553, 870, 75, { fontFamily: 'Domine', fontSize: '16px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 }).setScrollFactor(0, 0);
 
-  button4 = this.add.image(675, 840, 'button4').setInteractive().setScrollFactor(0, 0).setScale(.15);
+  button4 = this.add.image(665, 840, 'button4').setInteractive().setScrollFactor(0, 0).setScale(.15);
+  this.add.text(653, 870, 75, { fontFamily: 'Domine', fontSize: '16px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 }).setScrollFactor(0, 0);
 
-  button5 = this.add.image(775, 840, 'button5').setInteractive().setScrollFactor(0, 0).setScale(.15);
+  button5 = this.add.image(765, 840, 'button5').setInteractive().setScrollFactor(0, 0).setScale(.15);
+  this.add.text(748, 870, 200, { fontFamily: 'Domine', fontSize: '16px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 }).setScrollFactor(0, 0);
 
-  healSpellButton = this.add.image(875, 840, 'ButtonHeal').setInteractive().setScrollFactor(0, 0).setScale(.15);
+  healSpellButton = this.add.image(865, 840, 'ButtonHeal').setInteractive().setScrollFactor(0, 0).setScale(.15);
+  this.add.text(848, 870, 300, { fontFamily: 'Domine', fontSize: '16px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 }).setScrollFactor(0, 0);
 
-  arrowSpellButton = this.add.image(975, 840, 'ButtonArrow').setInteractive().setScrollFactor(0, 0).setScale(.15);
+  arrowSpellButton = this.add.image(965, 840, 'ButtonArrow').setInteractive().setScrollFactor(0, 0).setScale(.15);
+  this.add.text(948, 870, 150, { fontFamily: 'Domine', fontSize: '16px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 }).setScrollFactor(0, 0);
 
-  freezeSpellButton = this.add.image(1075, 840, 'ButtonFreeze').setInteractive().setScrollFactor(0, 0).setScale(.15);
+  freezeSpellButton = this.add.image(1065, 840, 'ButtonFreeze').setInteractive().setScrollFactor(0, 0).setScale(.15);
+  this.add.text(1048, 870, 150, { fontFamily: 'Domine', fontSize: '16px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 }).setScrollFactor(0, 0);
+
+  cancelButton = this.add.image(1150, 840, 'cancelButton').setInteractive().setScrollFactor(0, 0).setVisible(false);
+  cancelText = this.add.text(1120, 870, 'Cancel', { fontFamily: 'Domine', fontSize: '16px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 }).setScrollFactor(0, 0).setVisible(false);
 
 
   mycamera = this.cameras.main;
@@ -256,6 +279,8 @@ function gameCreate() {
   arrowSpellButton.on('pointerdown', selectSpell, { param1: spells[1], param2: 150, param3: 5, param4: 50 });
 
   freezeSpellButton.on('pointerdown', selectSpell, { param1: spells[2], param2: 150, param3: 6, param4: 100 });
+
+  cancelButton.on('pointerdown', cancelPlacement, this);
 
   this.input.on('pointerup', spawnTroop, this);
   this.input.on('pointerup', placeSpell, this);
@@ -335,6 +360,10 @@ function gameUpdate() {
   goldCount.setText('Gold: ' + gold);
 
   if (canplace) {
+
+    cancelButton.setVisible(true);
+    cancelText.setVisible(true);
+
     if (game.input.mousePointer.y > troopBarrierTop && game.input.mousePointer.y < troopBarrierBottom - troopYDif) {
       textCantPlace.setVisible(false);
       boundryBottom.setVisible(false);
@@ -347,6 +376,10 @@ function gameUpdate() {
   }
 
   if (canplaceSpell) {
+
+    cancelButton.setVisible(true);
+    cancelText.setVisible(true);
+
     if (game.input.mousePointer.y > troopBarrierTop && game.input.mousePointer.y < troopBarrierBottom - spellYDif) {
       textCantPlaceSpell.setVisible(false);
       boundryBottom.setVisible(false);
@@ -356,6 +389,11 @@ function gameUpdate() {
       boundryBottom.setVisible(true);
       boundryTop.setVisible(true);
     }
+  }
+
+  if (canplaceGoldMine) {
+    cancelButton.setVisible(true);
+    cancelText.setVisible(true);
   }
 
   Troops.forEach((spec) => {
@@ -381,13 +419,14 @@ function gameUpdate() {
       }
     }
 
-    if (!foundMatch) {
-      spec.setVelocityX(spec.speed);
-    }
-
     if (spec.checkCastleRange(enemyCastle)) {
       spec.setVelocity(0);
       spec.attack(enemyCastle);
+      foundMatch = true;
+    }
+
+    if (!foundMatch) {
+      spec.setVelocityX(spec.speed);
     }
 
   });
@@ -449,6 +488,36 @@ function trackMouse() {
 
 }
 
+function cancelPlacement() {
+
+  placeSound.play({ volume: .1 });
+
+  outlines[currentOutline].setVisible(false);
+  currentOutline = -1;
+
+  currentTroop = -1;
+  canplace = false;
+  troopYDif = -1;
+
+  currentSpell = spells[0];
+  spellYDif = -1;
+  canplaceSpell = false;
+
+  canplaceGoldMine = false;
+  goldMinePlacementOne.setVisible(false);
+  goldMinePlacementTwo.setVisible(false);
+  goldMinePlacementThree.setVisible(false);
+
+  textCantPlace.setVisible(false);
+  textCantPlaceSpell.setVisible(false);
+  boundryBottom.setVisible(false);
+  boundryTop.setVisible(false);
+
+  cancelButton.setVisible(false);
+  cancelText.setVisible(false);
+
+}
+
 function selectTroop() {
 
   if (gold - this.param2 < 0) {
@@ -465,6 +534,7 @@ function selectTroop() {
   currentTroop = this.param1;
   currentOutline = this.param3;
   troopYDif = this.param4 * 1.2;
+  textCantPlaceSpell.setVisible(false);
 
 }
 
@@ -547,6 +617,8 @@ function selectSpell() {
   currentSpell = this.param1;
   currentOutline = this.param3;
   spellYDif = this.param4 * 1.2;
+  textCantPlace.setVisible(false);
+
 }
 
 
@@ -596,6 +668,23 @@ function placeSpell(pointer) {
       }
 
     });
+
+    let temp2 = this.add.image(this.input.activePointer.positionToCamera(mycamera).x, pointer.position.y - 300, 'arrowsFalling');
+    this.tweens.add({
+      targets: temp2,
+      y: pointer.position.y,
+      ease: 'Linear',
+      duration: 500,
+    });
+
+    setTimeout(() => {
+      this.tweens.add({
+        targets: temp2,
+        duration: 3000,
+        alpha: '-=1'
+      });
+    }, 1000);
+
 
     gold -= 150;
     let temp = this.sound.add('ArrowSound');

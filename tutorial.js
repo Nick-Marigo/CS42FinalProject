@@ -19,19 +19,31 @@ let textCantPlaceTwo;
 var tween;
 
 function tutorialPreload() {
-  this.load.image('map', 'assets/Testing/testmap.png');
-  this.load.image('castle', 'assets/Testing/testCastle.png');
+  this.load.image('map', 'finalAssets/Map.png');
+  this.load.image('castle', 'finalAssets/Castle.png');
+  this.load.image('castleShadow', 'finalAssets/CastleShadow.png');
+  this.load.image('troopBoundry', 'finalAssets/troopboundries.png');
+  this.load.image('buttonBackground', 'finalAssets/Buttons/ButtonBackGround.png');
   this.load.image('black', 'assets/Testing/blackscreen.png');
   this.load.image('arrow', 'assets/arrow.png');
 
-  this.load.image('button1', 'assets/Testing/testButtons/buttonInfantry.png');
-  this.load.image('button2', 'assets/Testing/testButtons/buttonArcher.png');
-  this.load.image('button3', 'assets/Testing/testButtons/buttonTank.png');
-  this.load.image('button4', 'assets/Testing/testButtons/buttonWizard.png');
-  this.load.image('button5', 'assets/Testing/testButtons/buttonCalvary.png');
+  this.load.image('buttonGoldMine', 'finalAssets/Buttons/goldMineButton.png');
+  this.load.image('button1', 'finalAssets/Buttons/buttonInfantry.png');
+  this.load.image('button2', 'finalAssets/Buttons/buttonArcher.png');
+  this.load.image('button3', 'finalAssets/Buttons/buttonTank.png');
+  this.load.image('button4', 'finalAssets/Buttons/buttonWizard.png');
+  this.load.image('button5', 'finalAssets/Buttons/buttonCalvary.png');
+  this.load.image('ButtonHeal', 'finalAssets/Buttons/healSpellButton.png');
+  this.load.image('ButtonArrow', 'finalAssets/Buttons/arrowSpellButton.png');
+  this.load.image('ButtonFreeze', 'finalAssets/Buttons/freezeSpellButton.png');
+  this.load.image('cancelButton', 'finalAssets/Buttons/CancelButton.png');
 
-  this.load.image('troopBoundry', 'assets/Testing/troopboundries.png');
-  this.load.image('enemy', 'assets/Testing/testTroops/testenemy.png');
+  this.load.image('arrowOutline', 'finalAssets/OutlinePlacements/arrowSpellOutline.png');
+  this.load.image('arrowsFalling', 'finalAssets/ArrowsFalling.png');
+  this.load.image('freezeOutline', 'finalAssets/OutlinePlacements/freezeSpellOutline.png');
+  this.load.image('goldMineOutline', 'finalAssets/OutlinePlacements/goldMineOutline.png');
+  this.load.spritesheet('goldMine', 'finalAssets/GoldMine.png', { frameWidth: 75, frameHeight: 75 });
+
   this.load.image('crossed', 'assets/Testing/testButtons/buttonCrossed.png');
 }
 
@@ -44,20 +56,60 @@ function tutorialCreate() {
   troopBarrierTop = 200;
 
   this.add.image(2000, 450, 'map');
+  this.add.image(600, 840, 'buttonBackground').setScrollFactor(0, 0);
 
   blackscreen = this.add.image(3000, 450, 'black').setDepth(10);
   blackscreen.alpha = 0.65;
 
-  tutorialPlayerCastle = new Castle(this, 75, 450);
-  tutorialEnemyCastle = new Castle(this, 5925, 450);
+  tutorialPlayerCastle = new Castle(this, 100, 400, 75, 0, 0, false);
+  this.add.image(100, 400, 'castleShadow').alpha = .5;
+  tutorialEnemyCastle = new Castle(this, 3900, 400, -75, 800, 0, true);
+  this.add.image(3900, 400, 'castleShadow').setFlipX(true).alpha = .5;
 
-  tutorialPlayerCastleHealth = this.add.text(10, 16, 'Castle Health: ' + tutorialPlayerCastle.health, { fontFamily: 'Domine', fontSize: '40px', color: '#0000FF', stroke: '#000000', strokeThickness: 5 });
-  tutorialPlayerCastleHealth.setScrollFactor(0, 0);
+  miniMap = new MiniMap(this, 400, 0);
 
-  tutorialEnemyCastleHealth = this.add.text(690, 16, 'Enemy Castle Health: ' + tutorialEnemyCastle.health, { fontFamily: 'Domine', fontSize: '40px', color: '#FF0000', stroke: '#000000', strokeThickness: 5 });
-  tutorialEnemyCastleHealth.setScrollFactor(0, 0);
+  this.anims.create({
+    key: 'GoldMineAnims',
+    frames: this.anims.generateFrameNumbers('goldMine', { start: 0, end: 2 }),
+    frameRate: 8,
+    repeat: -1
+  });
 
-  goldCount = this.add.text(20, 830, 'Gold: ' + gold, { fontFamily: 'Domine', fontSize: '30px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 });
+  GoldMines.push(new GoldMine(this, 437, 637, 15));
+  GoldMines.push(new GoldMine(this, 637, 337, 30));
+  GoldMines.push(new GoldMine(this, 837, 450, 45));
+
+  goldMineButton = this.add.image(275, 840, 'buttonGoldMine').setInteractive().setScrollFactor(0, 0).setScale(.15);
+  this.add.text(258, 870, 250, { fontFamily: 'Domine', fontSize: '16px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 }).setScrollFactor(0, 0);
+
+  button1 = this.add.image(365, 840, 'button1').setInteractive().setScrollFactor(0, 0).setScale(.15);
+  this.add.text(353, 870, 50, { fontFamily: 'Domine', fontSize: '16px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 }).setScrollFactor(0, 0);
+
+  button2 = this.add.image(465, 840, 'button2').setInteractive().setScrollFactor(0, 0).setScale(.15);
+  this.add.text(453, 870, 50, { fontFamily: 'Domine', fontSize: '16px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 }).setScrollFactor(0, 0);
+
+  button3 = this.add.image(565, 840, 'button3').setInteractive().setScrollFactor(0, 0).setScale(.15);
+  this.add.text(553, 870, 75, { fontFamily: 'Domine', fontSize: '16px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 }).setScrollFactor(0, 0);
+
+  button4 = this.add.image(665, 840, 'button4').setInteractive().setScrollFactor(0, 0).setScale(.15);
+  this.add.text(653, 870, 75, { fontFamily: 'Domine', fontSize: '16px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 }).setScrollFactor(0, 0);
+
+  button5 = this.add.image(765, 840, 'button5').setInteractive().setScrollFactor(0, 0).setScale(.15);
+  this.add.text(748, 870, 200, { fontFamily: 'Domine', fontSize: '16px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 }).setScrollFactor(0, 0);
+
+  healSpellButton = this.add.image(865, 840, 'ButtonHeal').setInteractive().setScrollFactor(0, 0).setScale(.15);
+  this.add.text(848, 870, 300, { fontFamily: 'Domine', fontSize: '16px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 }).setScrollFactor(0, 0);
+
+  arrowSpellButton = this.add.image(965, 840, 'ButtonArrow').setInteractive().setScrollFactor(0, 0).setScale(.15);
+  this.add.text(948, 870, 150, { fontFamily: 'Domine', fontSize: '16px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 }).setScrollFactor(0, 0);
+
+  freezeSpellButton = this.add.image(1065, 840, 'ButtonFreeze').setInteractive().setScrollFactor(0, 0).setScale(.15);
+  this.add.text(1048, 870, 150, { fontFamily: 'Domine', fontSize: '16px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 }).setScrollFactor(0, 0);
+
+  cancelButton = this.add.image(1150, 840, 'cancelButton').setInteractive().setScrollFactor(0, 0).setVisible(false);
+  cancelText = this.add.text(1120, 870, 'Cancel', { fontFamily: 'Domine', fontSize: '16px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 }).setScrollFactor(0, 0).setVisible(false);
+
+  goldCount = this.add.text(20, 820, 'Gold: ' + gold, { fontFamily: 'Domine', fontSize: '30px', color: '#FFD700', stroke: '#000000', strokeThickness: 5 });
   goldCount.setScrollFactor(0, 0);
 
   textCantPlace = this.add.text(mycamera.x + 350, mycamera.y + 125, 'Can not place troops here!',
@@ -81,18 +133,15 @@ function tutorialCreate() {
   boundryBottom.setVisible(false);
   boundryTop.setVisible(false);
 
-  button1 = this.add.image(200, 850, 'button1');
-  button1.setInteractive();
-  button1.setScrollFactor(0, 0);
   button1.on('pointerdown', tutorialSelectTroop, { param1: troopbuttons[0], param2: 50 });
 
-  button2 = this.add.image(300, 850, 'button2').setScrollFactor(0, 0);
+  //button2 = this.add.image(300, 850, 'button2').setScrollFactor(0, 0);
   this.add.image(300, 850, 'crossed').setScrollFactor(0, 0).setDepth(2);
-  button3 = this.add.image(400, 850, 'button3').setScrollFactor(0, 0);
+  //button3 = this.add.image(400, 850, 'button3').setScrollFactor(0, 0);
   this.add.image(400, 850, 'crossed').setScrollFactor(0, 0).setDepth(2);
-  button4 = this.add.image(500, 850, 'button4').setScrollFactor(0, 0);
+  //button4 = this.add.image(500, 850, 'button4').setScrollFactor(0, 0);
   this.add.image(500, 850, 'crossed').setScrollFactor(0, 0).setDepth(2);
-  button5 = this.add.image(600, 850, 'button5').setScrollFactor(0, 0);
+  //button5 = this.add.image(600, 850, 'button5').setScrollFactor(0, 0);
   this.add.image(600, 850, 'crossed').setScrollFactor(0, 0).setDepth(2);
 
   this.input.on('pointerup', tutorialSpawnTroop, this);
@@ -168,8 +217,6 @@ function tutorialUpdate() {
   }
 
   goldCount.setText('Gold: ' + gold);
-  tutorialPlayerCastleHealth.setText('Castle Health: ' + tutorialPlayerCastle.health);
-  tutorialEnemyCastleHealth.setText('Enemy Castle Health: ' + tutorialEnemyCastle.health);
 
   if (cursors.left.isDown) {
     mycamera.scrollX -= 25;
@@ -217,11 +264,12 @@ function tutorialUpdate() {
     boundryTop.setVisible(true).setDepth(11);
   } else if (six) {
     textSix.setVisible(true);
-    tutorialPlayerCastleHealth.setDepth(11);
-    tutorialEnemyCastleHealth.setDepth(11);
+    tutorialPlayerCastle.bar.setDepth(11);
+    tutorialEnemyCastle.bar.setDepth(11);
   } else if (seven) {
-    textSeven.setVisible(true);
     tutorialPlayerCastle.setDepth(11);
+    tutorialEnemyCastle.setDepth(11);
+    textSeven.setVisible(true);
   } else if (eight) {
     textEight.setVisible(true);
   } else if (nine) {
@@ -370,13 +418,14 @@ function moveOn() {
   } else if (six) {
     six = false;
     seven = true;
-    tutorialPlayerCastleHealth.setDepth(1);
-    tutorialEnemyCastleHealth.setDepth(1);
+    tutorialPlayerCastle.bar.setDepth(2);
+    tutorialEnemyCastle.bar.setDepth(2);
     textSix.setVisible(false);
   } else if (seven) {
     seven = false;
     eight = true;
     tutorialPlayerCastle.setDepth(2);
+    tutorialEnemyCastle.setDepth(2);
     textSeven.setVisible(false);
   } else if (eight) {
     eight = false;
@@ -389,6 +438,7 @@ function moveOn() {
   } else if (ten) {
     tutorialTroops = [];
     tutorialEnemies = [];
+    GoldMines = [];
     spawnEnemies = true;
     ten = false;
     one = true;

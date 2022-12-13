@@ -9,13 +9,22 @@ class Castle extends Phaser.Physics.Arcade.Sprite {
     this.healthBarY = healthBarY;
     this.p = 390 / 500;
     this.isEnemy = isEnemy;
+    this.alive = true;
 
     this.setTexture('castle');
     this.setPosition(x, y);
     this.setDepth(3);
     this.bar.setScrollFactor(0, 0);
 
+    if(this.isEnemy) {
+      this.setFlipX(true);
+    }
+
+    if (!this.isEnemy) {
       this.draw();
+    } else {
+      this.drawEnemy();
+    }
 
     scene.add.existing(this);
     scene.add.existing(this.bar);
@@ -32,7 +41,11 @@ class Castle extends Phaser.Physics.Arcade.Sprite {
       this.value = 0;
     }
 
-    this.draw();
+    if (!this.isEnemy) {
+      this.draw();
+    } else {
+      this.drawEnemy();
+    }
 
     return (this.value === 0);
   }
@@ -72,12 +85,31 @@ class Castle extends Phaser.Physics.Arcade.Sprite {
     }
 
     var d = Math.floor(this.p * this.value);
-    
+
     this.bar.fillRect(this.healthBarX + 5, this.healthBarY + 5, d, 30);
 
-    if(this.isEnemy) {
-      //this.bar.setFlipY(true);
+  }
+
+  drawEnemy() {
+    this.bar.clear();
+
+    this.bar.fillStyle(0x000000);
+    this.bar.fillRect(this.healthBarX, this.healthBarY, 400, 40);
+
+    this.bar.fillStyle(0xffffff);
+    this.bar.fillRect(this.healthBarX + 5, this.healthBarY + 5, 390, 30);
+
+    if (this.value < 120) {
+      this.bar.fillStyle(0xff0000);
     }
+    else {
+      this.bar.fillStyle(0x00ff00);
+    }
+
+    var d = Math.floor(this.p * this.value);
+    var newX = this.healthBarX + 390 - d;
+
+    this.bar.fillRect(newX + 5, this.healthBarY + 5, d, 30);
 
   }
 

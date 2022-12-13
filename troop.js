@@ -140,27 +140,42 @@ class Troop extends Phaser.Physics.Arcade.Sprite {
 
       if (this.range > 90) {
 
-        var offset = (!this.isEnemy) ? 20 : -20;
-        var targetX = (!this.isEnemy) ? target.x : target.x;
+        setTimeout(() => {
 
-        
-        console.log(this.trooptype);
-        if (this.trooptype == 'Archer' || this.Trooptype == 'EnemyArcher') {
-          this.projectile.setPosition(this.x + offset, this.y - 15).setVisible(true);
-        } else {
-          this.projectile.setPosition(this.x + offset, this.y + 20).setVisible(true);
-        }
+          var offset = (!this.isEnemy) ? 20 : -20;
+          var targetX = (!this.isEnemy) ? target.x : target.x;
 
-        this.scene.tweens.add({
-          targets: this.projectile,
-          x: targetX,
-          ease: 'Linear',
-          duration: 500,
-          onComplete: function(tween, targets) {
-            targets[0].setVisible(false);
+          if (this.trooptype == 'Archer' || this.trooptype == 'EnemyArcher') {
+            this.projectile.setPosition(this.x + offset, this.y - 15).setVisible(true);
+          } else {
+            this.projectile.setPosition(this.x + offset, this.y + 20).setVisible(true);
           }
-        });
 
+          this.scene.tweens.add({
+            targets: this.projectile,
+            x: targetX,
+            ease: 'Linear',
+            duration: 500,
+            onComplete: function(tween, targets) {
+              targets[0].setVisible(false);
+            }
+          });
+        }, 1000);
+
+      }
+
+      if (this.trooptype === 'Archer' || this.trooptype === 'EnemyArcher') {
+        setTimeout(() => {
+          meleeAttack.play();
+        }, 1000);
+      } else if (this.trooptype === 'Wizard' || this.trooptype === 'EnemyWizard') {
+        setTimeout(() => {
+          meleeAttack.play();
+        }, 1000);
+      } else {
+        setTimeout(() => {
+          meleeAttack.play();
+        }, 1000);
       }
 
       target.healthValue -= this.damageValue;
@@ -196,8 +211,10 @@ class Troop extends Phaser.Physics.Arcade.Sprite {
   }
 
   arrowDrop() {
-    this.healthValue -= 50;
-    this.damage(50);
+    setTimeout(() => {
+      this.healthValue -= 50;
+      this.damage(50);
+    }, 500);
   }
 
   followTroop() {
@@ -253,6 +270,7 @@ class EnemyArcher extends Troop {
   constructor(scene, x, y) {
     super(scene, x, y, 'EnemyArcher', null, 25, 42, 75, 40, 50, 150, -40, 75, true);
     this.projectile = new Projectile(scene, 'ArcherProjectile');
+    this.projectile.setFlipX(true);
     scene.add.existing(this.projectile);
   }
 }
