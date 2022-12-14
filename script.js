@@ -32,7 +32,6 @@ let config = {
   },
   fps: { forceSetTimeOut: true, target: 60 },
   scene: [titleScene, tutorial, gamePlayScene, WinOrLoseScene]
-  //parent: "tron"
 };
 
 let game = new Phaser.Game(config);
@@ -76,7 +75,7 @@ let enemyCastleHealth;
 let music;
 let selectSound, placeSound, healSound, popOne, popTwo, popThree, meleeAttack;
 
-let goldMinePlacement;
+let goldMinePlacementOne, goldMinePlacementTwo, goldMinePlacementThree;
 
 let miniMap;
 
@@ -85,10 +84,10 @@ let miniMap;
 //********************************************************************************************************************
 
 function gamePreload() {
-  this.load.image('map', 'finalAssets/Map.png');
-  this.load.image('castle', 'finalAssets/Castle.png');
-  this.load.image('castleShadow', 'finalAssets/CastleShadow.png');
-  this.load.image('troopBoundry', 'finalAssets/troopboundries.png');
+  this.load.image('map', 'finalAssets/Misc/Map.png');
+  this.load.image('castle', 'finalAssets/Misc/Castle.png');
+  this.load.image('castleShadow', 'finalAssets/Misc/CastleShadow.png');
+  this.load.image('troopBoundry', 'finalAssets/Misc/troopboundries.png');
   this.load.image('buttonBackground', 'finalAssets/Buttons/ButtonBackGround.png');
 
   this.load.image('buttonGoldMine', 'finalAssets/Buttons/goldMineButton.png');
@@ -103,10 +102,10 @@ function gamePreload() {
   this.load.image('cancelButton', 'finalAssets/Buttons/CancelButton.png');
 
   this.load.image('arrowOutline', 'finalAssets/OutlinePlacements/arrowSpellOutline.png');
-  this.load.image('arrowsFalling', 'finalAssets/ArrowsFalling.png');
+  this.load.image('arrowsFalling', 'finalAssets/Misc/ArrowsFalling.png');
   this.load.image('freezeOutline', 'finalAssets/OutlinePlacements/freezeSpellOutline.png');
   this.load.image('goldMineOutline', 'finalAssets/OutlinePlacements/goldMineOutline.png');
-  this.load.spritesheet('goldMine', 'finalAssets/GoldMine.png', { frameWidth: 75, frameHeight: 75 });
+  this.load.spritesheet('goldMine', 'finalAssets/Misc/GoldMine.png', { frameWidth: 75, frameHeight: 75 });
 
   this.load.spritesheet('Infantry', 'finalAssets/Troops/Infantry.png', { frameWidth: 50, frameHeight: 100 });
   this.load.spritesheet('Archer', 'finalAssets/Troops/Archer.png', { frameWidth: 50, frameHeight: 84 });
@@ -138,7 +137,7 @@ function gamePreload() {
 function gameCreate() {
 
   updateCount = 1;
-  gold = 5000;
+  gold = 300;
 
   troopBarrierBottom = 700;
   troopBarrierTop = 200;
@@ -171,9 +170,9 @@ function gameCreate() {
     repeat: -1
   });
 
-  GoldMines.push(new GoldMine(this, 437, 637, 15));
-  GoldMines.push(new GoldMine(this, 637, 337, 30));
-  GoldMines.push(new GoldMine(this, 837, 450, 45));
+  GoldMines.push(new GoldMine(this, 437, 637, 10));
+  GoldMines.push(new GoldMine(this, 637, 337, 20));
+  GoldMines.push(new GoldMine(this, 837, 450, 30));
 
   this.physics.world.setBounds(0, 0, 4000, 900);
 
@@ -210,6 +209,8 @@ function gameCreate() {
 
   }
 
+
+  outlines = [];
   let outlineImage = ['Infantry', 'Archer', 'Tank', 'Wizard', 'Calvary', 'arrowOutline', 'freezeOutline', 'goldMine'];
   for (let count = 0; count < outlineImage.length; count++) {
     outlines.push(this.add.image(500, 400, outlineImage[count]));
@@ -268,7 +269,7 @@ function gameCreate() {
 
   button3.on('pointerdown', selectTroop, { param1: troopbuttons[2], param2: 75, param3: 2, param4: 50 });
 
-  button4.on('pointerdown', selectTroop, { param1: troopbuttons[3], param2: 100, param3: 3, param4: 45 });
+  button4.on('pointerdown', selectTroop, { param1: troopbuttons[3], param2: 75, param3: 3, param4: 45 });
 
   button5.on('pointerdown', selectTroop, { param1: troopbuttons[4], param2: 200, param3: 4, param4: 75 });
 
@@ -346,12 +347,18 @@ function gameUpdate() {
   }
 
   if (playerCastle.value <= 0) {
+    Troops = [];
+    enemyTroops = [];
+    GoldMines = [];
     WinOrLose = false;
     music.pause();
     this.scene.start('WinOrLoseScene');
   }
 
   if (enemyCastle.value <= 0) {
+    Troops = [];
+    enemyTroops = [];
+    GoldMines = [];
     WinOrLose = true;
     music.pause();
     this.scene.start('WinOrLoseScene');
@@ -394,6 +401,11 @@ function gameUpdate() {
   if (canplaceGoldMine) {
     cancelButton.setVisible(true);
     cancelText.setVisible(true);
+  }
+
+  if(!canplace && !canplaceSpell && !canplaceGoldMine) {
+    cancelButton.setVisible(false);
+    cancelText.setVisible(false);
   }
 
   Troops.forEach((spec) => {
@@ -740,7 +752,7 @@ function placeSpell(pointer) {
 }
 
 function selectGoldMine() {
-  if (gold < this.param1) {
+  if (gold < this.param2) {
     return;
   }
 
@@ -838,12 +850,9 @@ function WinOrLosePreload() {
 function WinOrLoseCreate() {
 
   //CLEARING ARRAYS OF TROOPS
-  Troops = [];
-  enemyTroops = [];
   titletroops = [];
   titlenemies = [];
   outlines = [];
-
 
   if (WinOrLose) {
     this.add.image(600, 450, 'winbackground');
